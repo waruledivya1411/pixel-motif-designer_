@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/constants/app_constants.dart';
+import '../providers/theme_provider.dart';
 import '../screens/templates/templates_screen.dart';
+import 'appearance_sheet.dart';
 import 'grid_size_selector.dart';
 
 /// Navigation drawer for canvas-level settings.
@@ -49,6 +52,7 @@ class AppDrawer extends StatelessWidget {
                       );
                     },
                   ),
+                  const _AppearanceDrawerTile(),
                   const SizedBox(height: AppConstants.paddingMedium),
                   Padding(
                     padding: const EdgeInsets.only(
@@ -134,6 +138,53 @@ class _DrawerHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Drawer entry that shows the active theme mode as a subtitle.
+class _AppearanceDrawerTile extends StatelessWidget {
+  const _AppearanceDrawerTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtitle = context.select<ThemeProvider, String>(
+      (provider) => provider.themeModeLabel,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+      child: ListTile(
+        leading: Icon(
+          Icons.palette_outlined,
+          color: theme.colorScheme.primary,
+        ),
+        title: Text(
+          'Appearance',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+        ),
+        tileColor: theme.colorScheme.surface,
+        onTap: () {
+          Navigator.of(context).pop();
+          showAppearanceSheet(context);
+        },
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingMedium,
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@
 library;
 
 export 'app_drawer.dart';
+export 'appearance_sheet.dart';
 export 'color_palette.dart';
 export 'editing_toolbar.dart';
 export 'export_section.dart';

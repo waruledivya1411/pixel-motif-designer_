@@ -9,3 +9,4 @@ export 'export_service.dart';
 export 'svg_export_layout.dart';
 export 'svg_generator.dart';
 export 'template_service.dart';
+export 'theme_preferences.dart';

@@ -83,7 +83,7 @@ class _ToolButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primaryContainer
-                  : theme.colorScheme.surface,
+                  : theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppConstants.borderRadius),
               border: Border.all(
                 color: isSelected

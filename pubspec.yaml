@@ -35,6 +35,9 @@ dependencies:
   # Shares SVG files so users can save to Downloads/Files on mobile.
   share_plus: ^12.0.1
 
+  # Persists appearance (theme mode) across app restarts.
+  shared_preferences: ^2.5.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

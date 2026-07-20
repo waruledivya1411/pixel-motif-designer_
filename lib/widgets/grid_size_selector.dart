@@ -25,11 +25,13 @@ class GridSizeSelector extends StatelessWidget {
       label: 'Grid size selector',
       child: Card(
         margin: EdgeInsets.zero,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.12),
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           side: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.35),
+            color: theme.colorScheme.outline.withValues(alpha: 0.85),
           ),
         ),
         child: Padding(
@@ -177,12 +179,12 @@ class _GridSizeOption extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primaryContainer
-                  : theme.colorScheme.surface,
+                  : theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppConstants.borderRadius),
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.outline.withValues(alpha: 0.5),
+                    : theme.colorScheme.outline.withValues(alpha: 0.75),
               ),
               boxShadow: isSelected
                   ? [
