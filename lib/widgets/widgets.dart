@@ -5,5 +5,6 @@
 /// unless they are intentionally scoped feature widgets.
 library;
 
+export 'color_palette.dart';
 export 'pixel_cell.dart';
 export 'pixel_grid.dart';

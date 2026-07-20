@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../widgets/color_palette.dart';
 import '../../widgets/pixel_grid.dart';
 
 /// Primary landing screen for the application.
 ///
-/// Composes the scaffold shell with a centered [PixelGrid]. Toolbars,
-/// palette, and export controls will be added in later phases.
+/// Layout: AppBar → [ColorPalette] → [PixelGrid].
+/// Toolbars and export controls will be added in later phases.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -18,7 +19,15 @@ class HomeScreen extends StatelessWidget {
       ),
       body: const Center(
         child: SingleChildScrollView(
-          child: PixelGrid(),
+          padding: EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ColorPalette(),
+              SizedBox(height: AppConstants.paddingLarge),
+              PixelGrid(),
+            ],
+          ),
         ),
       ),
     );
