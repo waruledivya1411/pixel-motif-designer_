@@ -4,4 +4,6 @@
 /// This keeps models testable and independent of UI/state layers.
 library;
 
-// Models will be added when the canvas and export features are implemented.
+export 'canvas_state.dart';
+export 'drawing_tool.dart';
+export 'pixel.dart';
