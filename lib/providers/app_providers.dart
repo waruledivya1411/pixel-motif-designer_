@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-import 'grid_provider.dart';
+import 'canvas_provider.dart';
 import 'motif_provider.dart';
 import 'palette_provider.dart';
 
@@ -20,7 +20,7 @@ class AppProviders extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => GridProvider()),
+        ChangeNotifierProvider(create: (_) => CanvasProvider()),
         ChangeNotifierProvider(create: (_) => PaletteProvider()),
         ChangeNotifierProvider(create: (_) => MotifProvider()),
       ],
