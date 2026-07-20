@@ -10,6 +10,7 @@ import '../core/constants/color_constants.dart';
 import '../core/constants/grid_constants.dart';
 import '../models/canvas_state.dart';
 import 'export_result.dart';
+import 'svg_generator.dart';
 
 /// Handles PNG generation and platform-specific saving for motif exports.
 ///
@@ -34,7 +35,7 @@ class ExportService {
   Future<ExportResult> exportMotifAsPng(CanvasState state) async {
     try {
       final bytes = await _pngEncoder(state);
-      final fileName = _buildFileName();
+      final fileName = _buildFileName('png');
 
       if (Platform.isAndroid || Platform.isIOS) {
         final savedToGallery = await _trySaveToGallery(bytes, fileName);
@@ -42,6 +43,21 @@ class ExportService {
       }
 
       await _fileSaver(bytes, fileName);
+      return ExportResult.success;
+    } catch (_) {
+      return ExportResult.failure;
+    }
+  }
+
+  /// Generates an SVG from [state] and saves it to Downloads/Documents.
+  ///
+  /// SVG files are always written to a user-accessible directory because
+  /// gallery APIs are image-specific and vector files belong in Documents.
+  Future<ExportResult> exportMotifAsSvg(CanvasState state) async {
+    try {
+      final svgContent = SvgGenerator.generateFromCanvas(state);
+      final fileName = _buildFileName('svg');
+      await _saveTextToDownloadsOrDocuments(svgContent, fileName);
       return ExportResult.success;
     } catch (_) {
       return ExportResult.failure;
@@ -77,6 +93,16 @@ class ExportService {
     await file.writeAsBytes(bytes, flush: true);
   }
 
+  /// Writes text-based exports (e.g. SVG) to a user-accessible directory.
+  static Future<void> _saveTextToDownloadsOrDocuments(
+    String content,
+    String fileName,
+  ) async {
+    final directory = await _resolveFallbackDirectory();
+    final file = File('${directory.path}/$fileName');
+    await file.writeAsString(content, flush: true);
+  }
+
   static Future<Directory> _resolveFallbackDirectory() async {
     if (Platform.isAndroid) {
       final downloads = Directory('/storage/emulated/0/Download');
@@ -89,9 +115,9 @@ class ExportService {
     return getApplicationDocumentsDirectory();
   }
 
-  static String _buildFileName() {
+  static String _buildFileName(String extension) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    return 'pixel_motif_$timestamp.png';
+    return 'pixel_motif_$timestamp.$extension';
   }
 
   /// Renders the pixel matrix from [state] into PNG bytes.

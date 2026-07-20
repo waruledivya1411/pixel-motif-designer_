@@ -15,10 +15,10 @@ class MotifProvider extends ChangeNotifier {
 
   final ExportService _exportService;
 
-  /// Whether a PNG export is currently in progress.
+  /// Whether an export is currently in progress.
   bool _isExporting = false;
 
-  /// Read-only export-in-progress flag for disabling the export button.
+  /// Read-only export-in-progress flag for disabling export buttons.
   bool get isExporting => _isExporting;
 
   /// Exports [canvasState] as a PNG via [ExportService].
@@ -26,13 +26,31 @@ class MotifProvider extends ChangeNotifier {
   /// Returns an [ExportResult] for the UI to display in a SnackBar.
   /// Does not mutate canvas state — export is read-only with respect to pixels.
   Future<ExportResult> exportPng(CanvasState canvasState) async {
+    return _runExport(
+      () => _exportService.exportMotifAsPng(canvasState),
+    );
+  }
+
+  /// Exports [canvasState] as an SVG via [ExportService].
+  ///
+  /// Saves to Downloads/Documents asynchronously without blocking the UI.
+  Future<ExportResult> exportSvg(CanvasState canvasState) async {
+    return _runExport(
+      () => _exportService.exportMotifAsSvg(canvasState),
+    );
+  }
+
+  /// Runs an export operation while tracking [isExporting] for the UI.
+  Future<ExportResult> _runExport(
+    Future<ExportResult> Function() exportAction,
+  ) async {
     if (_isExporting) return ExportResult.failure;
 
     _isExporting = true;
     notifyListeners();
 
     try {
-      return await _exportService.exportMotifAsPng(canvasState);
+      return await exportAction();
     } finally {
       _isExporting = false;
       notifyListeners();

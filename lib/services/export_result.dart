@@ -1,4 +1,4 @@
-/// Result of a PNG export attempt surfaced to the UI layer.
+/// Result of an export attempt surfaced to the UI layer.
 enum ExportResult {
   /// Image was saved to the gallery or filesystem successfully.
   success,

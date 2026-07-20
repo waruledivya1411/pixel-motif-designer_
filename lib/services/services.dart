@@ -6,3 +6,4 @@ library;
 
 export 'export_result.dart';
 export 'export_service.dart';
+export 'svg_generator.dart';
