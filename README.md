@@ -12,6 +12,7 @@ A production-quality Flutter application for designing pixel motifs. Built with 
 - [Screenshots & Layout](#screenshots--layout)
 - [Getting Started](#getting-started)
 - [How to Use](#how-to-use)
+- [Export](#export)
 - [Architecture](#architecture)
 - [Performance Strategy](#performance-strategy)
 - [Drawing Flow](#drawing-flow)
@@ -27,43 +28,61 @@ A production-quality Flutter application for designing pixel motifs. Built with 
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| 16×16 pixel grid | ✅ Done | Dynamic grid driven by `CanvasProvider` / `GridConstants` |
+| Configurable grid (8×8, 16×16, 32×32) | ✅ Done | Drawer menu with confirmation before resize |
 | Tap-to-draw | ✅ Done | Single tap paints or erases one cell |
 | Drag drawing | ✅ Done | Continuous paint/erase while finger moves |
 | Color palette | ✅ Done | 5 swatches — Black, Red, Blue, Green, Yellow |
-| Draw tool | ✅ Done | Paints with the active color |
-| Eraser tool | ✅ Done | Clears pixels on tap or drag |
-| Clear canvas | ✅ Done | Resets all pixels; keeps color & tool selection |
-| Export PNG/SVG | 🔜 Planned | Gallery save and file export |
+| Draw / Eraser / Clear | ✅ Done | Material 3 toolbar with tool selection |
+| Live pixel counter | ✅ Done | Real-time filled/total count with progress bar |
+| Export PNG | ✅ Done | Saves to device gallery via `gal` |
+| Export SVG | ✅ Done | Saves to `Downloads/Pixel Motif Designer` on Android |
+| Material 3 UI | ✅ Done | Card panels, consistent spacing, accessibility |
 | Undo / Redo | 🔜 Planned | Immutable state snapshots ready for this |
 | Save / Load | 🔜 Planned | Persist motifs to local storage |
+| Dark theme | 🔜 Planned | Theme layer prepared for extension |
 
 ---
 
 ## Screenshots & Layout
 
-The home screen follows a top-to-bottom editing flow optimized for one-handed mobile use:
+The home screen uses a fixed, non-scrollable column layout optimized for one-handed mobile use. Grid size is configured from the **navigation drawer** (hamburger menu, top-left).
 
 ```
 ┌─────────────────────────────────┐
-│  AppBar — Pixel Motif Designer  │
+│ ☰  Pixel Motif Designer         │
 ├─────────────────────────────────┤
 │  Color Palette  ● ● ● ● ●       │
 ├─────────────────────────────────┤
 │  [ Draw ] [ Eraser ]  [ Clear ] │
 ├─────────────────────────────────┤
-│                                 │
-│         16 × 16 Pixel Grid      │
-│                                 │
+│  Canvas Usage  ████░░  48/256   │
+│  ┌───────────────────────────┐  │
+│  │      Pixel Grid           │  │
+│  └───────────────────────────┘  │
+├─────────────────────────────────┤
+│  [ Export PNG ] [ Export SVG ]  │
+└─────────────────────────────────┘
+
+Drawer (☰):
+┌─────────────────────────────────┐
+│  Pixel Motif Designer           │
+│  Canvas settings                │
+├─────────────────────────────────┤
+│  Grid size                      │
+│  ○  8 × 8   Compact · 64 px     │
+│  ● 16 × 16  Standard · 256 px   │
+│  ○ 32 × 32  Large · 1024 px     │
 └─────────────────────────────────┘
 ```
 
 | UI Component | Widget | Provider interaction |
 |--------------|--------|--------------------|
-| Color Palette | `ColorPalette` | `changeActiveColor()` |
-| Draw / Eraser | `EditingToolbar` | `changeDrawingTool()` |
-| Clear | `EditingToolbar` | `clearCanvas()` |
-| Pixel Grid | `PixelGrid` | `handlePixelDrag()` |
+| Grid size | `GridSizeSelector` (drawer) | `changeGridSize()` |
+| Color palette | `ColorPalette` | `changeActiveColor()` |
+| Draw / Eraser / Clear | `EditingToolbar` | `changeDrawingTool()` / `clearCanvas()` |
+| Pixel counter | `PixelCounterCard` | `filledPixelCount` / `totalPixelCount` |
+| Pixel grid | `PixelGrid` | `handlePixelDrag()` |
+| Export | `ExportSection` | `MotifProvider.exportPng()` / `exportSvg()` |
 
 ---
 
@@ -107,11 +126,46 @@ flutter analyze
 
 ## How to Use
 
-1. **Pick a color** — Tap a swatch in the color palette. The active color is highlighted with a border and checkmark.
-2. **Select Draw** — Tap the **Draw** button in the toolbar (selected by default).
-3. **Paint** — Tap or drag across the grid to fill pixels with the active color.
-4. **Erase** — Tap **Eraser**, then tap or drag to clear pixels.
-5. **Clear all** — Tap **Clear** to reset the entire grid. Your selected color and tool remain unchanged.
+1. **Open settings** — Tap the **☰ menu** (top-left) to open the drawer.
+2. **Choose grid size** — Select **8×8**, **16×16** (default), or **32×32**. Confirm when prompted; the canvas clears but your color and tool are preserved.
+3. **Pick a color** — Tap a swatch in the color palette. The active swatch shows a border and checkmark.
+4. **Select Draw** — Tap **Draw** in the toolbar (selected by default).
+5. **Paint** — Tap or drag across the grid to fill pixels with the active color.
+6. **Erase** — Tap **Eraser**, then tap or drag to clear pixels.
+7. **Clear all** — Tap **Clear** to reset the entire grid. Color and tool selection are unchanged.
+8. **Track progress** — Watch the **Canvas Usage** bar above the grid (`filled / total`).
+9. **Export** — Tap **Export PNG** (gallery) or **Export SVG** (Downloads folder on Android).
+
+---
+
+## Export
+
+### PNG
+
+- Renders the canvas at **16 px per cell** (matching on-screen proportions).
+- Saves to the **device gallery** via the [`gal`](https://pub.dev/packages/gal) package.
+- Requests gallery permission on first export if needed.
+
+### SVG
+
+- Generates a vector file where each filled pixel becomes a `<rect>`.
+- Viewport dimensions are computed dynamically via `SvgExportLayout`:
+
+  ```
+  svgWidth  = gridColumns × exportCellPixelSize
+  svgHeight = gridRows    × exportCellPixelSize
+  viewBox   = 0 0 svgWidth svgHeight
+  ```
+
+- **Android:** Saved directly to `Downloads/Pixel Motif Designer/` via MediaStore (no share sheet).
+- **iOS / desktop:** Saved to Documents or opened via the system share sheet.
+
+### Where to find exported files
+
+| Format | Location |
+|--------|----------|
+| PNG | Device **Gallery / Photos** app |
+| SVG | **Files → Downloads → Pixel Motif Designer** (Android) |
 
 ---
 
@@ -125,7 +179,10 @@ The project is organized into strict layers so each concern has a single respons
 │  Detects gestures · Displays state · No business logic  │
 ├─────────────────────────────────────────────────────────┤
 │  State Layer (providers)                                │
-│  CanvasProvider · Tool routing · Duplicate guards       │
+│  CanvasProvider · MotifProvider · Tool routing          │
+├─────────────────────────────────────────────────────────┤
+│  Services Layer                                         │
+│  ExportService · SvgGenerator · PlatformDownloadSaver   │
 ├─────────────────────────────────────────────────────────┤
 │  Domain Layer (models)                                  │
 │  Pixel · CanvasState · DrawingTool · Pure Dart          │
@@ -144,7 +201,7 @@ The project is organized into strict layers so each concern has a single respons
 - Has a minimal learning curve — easy to explain in interviews
 - Scales well for this app's scope without the boilerplate of heavier solutions
 
-All canvas mutations flow through a single `CanvasProvider`. Widgets never modify pixel data directly.
+All canvas mutations flow through `CanvasProvider`. Export orchestration flows through `MotifProvider`. Widgets never modify pixel data directly.
 
 ---
 
@@ -160,10 +217,12 @@ Continuous drag drawing is one of the most performance-sensitive features. The i
 | `_PixelCellAt` | `pixels[row][column].color` | **That cell's color changes** |
 | `_ColorSwatch` | `activeColor == swatchColor` | Its selection state changes |
 | `_ToolButton` | `selectedTool == tool` | Its selection state changes |
+| `PixelCounterCard` | `(filledPixelCount, totalPixelCount)` | Count changes |
+| `GridSizeSelector` | `gridRows` | Grid size changes |
 | `_ClearCanvasButton` | Nothing (`context.read`) | Never on state change |
 | `_PixelGridGestureLayer` | Nothing (`context.read`) | Never on state change |
 
-Updating one pixel rebuilds **one cell**, not the entire 16×16 grid.
+Updating one pixel rebuilds **one cell**, not the entire grid.
 
 ### 2. Provider-level duplicate guards
 
@@ -171,6 +230,7 @@ Updating one pixel rebuilds **one cell**, not the entire 16×16 grid.
 |-------|----------|----------|
 | Stroke tracking | `handlePixelDrag` | Re-processing the same cell during one drag stroke |
 | Pixel check | `drawPixel` / `erasePixel` | Matrix copy when color is already correct |
+| Incremental counter | `_filledPixelCount` | Full-matrix scan on every rebuild |
 | Tool/color check | `changeDrawingTool` / `changeActiveColor` | Notification when value unchanged |
 | Commit gate | `_commit` | `notifyListeners` when `CanvasState` is unchanged |
 
@@ -196,13 +256,14 @@ Pointer down / move
   → Only affected _PixelCellAt rebuilds via context.select
 ```
 
-### Tool switching
+### Grid resize
 
 ```
-Tap Draw or Eraser
-  → changeDrawingTool(DrawingTool.draw | .erase)
-  → _commit → notifyListeners()
-  → Only the two _ToolButton widgets rebuild
+Select size in drawer → confirmation dialog
+  → CanvasProvider.changeGridSize(size)
+  → New empty CanvasState (preserves color + tool)
+  → PixelGrid Selector rebuilds scaffold
+  → PixelCounterCard updates total count
 ```
 
 ### Domain models (immutable)
@@ -217,16 +278,19 @@ Immutable snapshots make **undo/redo** straightforward to add later (push/pop `C
 
 ## CanvasProvider API
 
-| Method | Purpose |
-|--------|---------|
+| Method / getter | Purpose |
+|-----------------|---------|
 | `changeActiveColor(int color)` | Set paint color (does not alter existing pixels) |
 | `changeDrawingTool(DrawingTool tool)` | Switch between draw and eraser |
+| `changeGridSize(int size)` | Resize canvas; clears pixels; keeps color & tool |
 | `drawPixel(int row, int column)` | Paint active color at cell |
 | `erasePixel(int row, int column)` | Clear cell to empty |
 | `handlePixelTap(int row, int column)` | Apply active tool on tap |
 | `handlePixelDrag(int row, int column)` | Apply active tool during drag |
 | `beginStroke()` / `endStroke()` | Manage per-stroke duplicate tracking |
 | `clearCanvas()` | Reset all pixels; preserves color and tool |
+| `filledPixelCount` | O(1) running count of painted cells |
+| `totalPixelCount` | `gridRows × gridColumns` |
 
 ---
 
@@ -238,7 +302,7 @@ lib/
 ├── main.dart                   # Entry point (no business logic)
 │
 ├── core/
-│   ├── constants/              # Grid size, colors, padding
+│   ├── constants/              # Grid size, colors, padding, layout tokens
 │   ├── theme/                  # Material 3 light theme
 │   └── utils/
 │
@@ -249,19 +313,34 @@ lib/
 │
 ├── providers/                  # ChangeNotifier state management
 │   ├── canvas_provider.dart    # Canvas state + all drawing logic
+│   ├── motif_provider.dart     # Export orchestration
 │   └── app_providers.dart      # MultiProvider registration
 │
 ├── screens/
-│   └── home/                   # AppBar + Palette + Toolbar + Grid
+│   └── home/                   # AppBar + drawer + editor layout
 │
 ├── widgets/
+│   ├── app_drawer.dart         # Navigation drawer shell
+│   ├── grid_size_selector.dart # 8 / 16 / 32 grid picker
 │   ├── color_palette.dart      # Selectable color swatches
 │   ├── editing_toolbar.dart    # Draw, Eraser, Clear controls
+│   ├── pixel_counter_card.dart # Live filled/total display
+│   ├── editor_panel.dart       # Shared Material 3 card wrapper
+│   ├── export_section.dart     # PNG + SVG export buttons
 │   ├── pixel_cell.dart         # Pure presentation cell
 │   └── pixel_grid.dart         # Grid + gesture layer + selective rebuilds
 │
-├── services/                   # Export, permissions (planned)
+├── services/
+│   ├── export_service.dart     # PNG gallery + SVG file save
+│   ├── svg_generator.dart      # Canvas → SVG string
+│   ├── svg_export_layout.dart  # Dynamic viewport sizing
+│   └── platform_download_saver.dart  # Android MediaStore channel
+│
 └── exports/                    # Barrel exports
+
+test/
+├── widget_test.dart
+└── svg_generator_test.dart       # SVG viewport + grid size tests
 ```
 
 ---
@@ -271,33 +350,36 @@ lib/
 | Package | Purpose |
 |---------|---------|
 | `provider` | State management |
-| `flutter_svg` | SVG motif import/export (planned) |
-| `path_provider` | Local file paths (planned) |
-| `gal` | Save images to device gallery (planned) |
-| `permission_handler` | Runtime permissions (planned) |
-| `screenshot` | Widget snapshot export (planned) |
-| `xml` | SVG/XML parsing (planned) |
+| `gal` | Save PNG images to device gallery |
+| `share_plus` | SVG share fallback on iOS |
+| `path_provider` | Local file paths for exports |
+| `permission_handler` | Runtime gallery permissions |
+| `xml` | SVG document generation |
+| `flutter_svg` | SVG rendering support |
+| `screenshot` | Widget snapshot utilities |
 
 ---
 
 ## Design Principles
 
-1. **Separation of concerns** — UI displays; providers decide; models describe.
+1. **Separation of concerns** — UI displays; providers decide; models describe; services handle I/O.
 2. **Immutability** — State changes produce new objects, never in-place mutation.
 3. **Performance by default** — Guards and selective subscriptions at every layer.
-4. **Reusable widgets** — `PixelCell`, `ColorPalette`, `EditingToolbar` are composable and provider-aware where needed.
+4. **Reusable widgets** — Composable, provider-aware components with consistent Material 3 styling.
 5. **Interview-ready** — Every layer has a clear, explainable responsibility.
 
 ---
 
 ## Roadmap
 
-- [ ] Export to PNG (screenshot + gallery save)
-- [ ] Export to SVG (xml generation)
+- [x] Export to PNG (gallery save)
+- [x] Export to SVG (Downloads save on Android)
+- [x] Custom grid sizes (8×8, 16×16, 32×32)
+- [x] Live pixel counter
 - [ ] Undo / Redo stack
 - [ ] Save / load motif files
-- [ ] Custom grid sizes
 - [ ] Dark theme
+- [ ] Motif import from SVG
 
 ---
 
