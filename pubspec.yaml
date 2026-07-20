@@ -38,6 +38,9 @@ dependencies:
   # Persists appearance (theme mode) across app restarts.
   shared_preferences: ^2.5.3
 
+  # Keeps native splash visible until Flutter first frame (launch polish).
+  flutter_native_splash: ^2.4.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -48,9 +51,7 @@ dev_dependencies:
 flutter_native_splash:
   color: "#E1E8F2"
   color_dark: "#0F1218"
-  image: assets/icon/app_icon.png
   android_12:
-    image: assets/icon/app_icon.png
     color: "#E1E8F2"
     color_dark: "#0F1218"
   android: true

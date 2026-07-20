@@ -16,9 +16,8 @@ abstract final class AppConstants {
   static const String appDescription =
       'A production-quality pixel art studio for creating, editing, and exporting motif designs on your phone.';
 
-  /// Public source repository.
-  static const String repositoryUrl =
-      'github.com/waruledivya1411/pixel-motif-designer_';
+  /// Contact email shown in About.
+  static const String appContactEmail = 'waruledivya14@gmail.com';
 
   /// Highlighted capabilities shown in the About sheet.
   static const List<String> appFeatures = [

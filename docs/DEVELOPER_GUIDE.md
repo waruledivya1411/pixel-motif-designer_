@@ -78,11 +78,12 @@ Use this to verify all requested capabilities are present in the codebase.
 | About drawer item | ✅ | `AppDrawer` → `showAboutSheet()` |
 | App version & author | ✅ | `AppConstants.appVersion`, `appAuthor` |
 | Feature list in About | ✅ | `AppConstants.appFeatures` |
-| Repository link | ✅ | `AppConstants.repositoryUrl` |
-| Native splash (OS) | ✅ | `flutter_native_splash` + Android/iOS assets |
+| Contact email | ✅ | `AppConstants.appContactEmail` |
+| Native splash (color only) | ✅ | `flutter_native_splash` + Android `splash_background` colors |
+| No black launch flash | ✅ | `NormalTheme` window color + `FlutterNativeSplash.preserve()` |
 | Animated splash screen | ✅ | `SplashScreen` → fade to `HomeScreen` |
 | Theme-aware splash colors | ✅ | Light `#E1E8F2`, dark `#0F1218` |
-| Logo on splash | ✅ | `assets/icon/app_icon.png` |
+| Logo on animated splash | ✅ | `assets/icon/app_icon.png` in `SplashScreen` |
 
 ### Branding & UI
 
@@ -163,18 +164,19 @@ Future<ExportResult> exportSvg(CanvasState state)
 
 1. Replace `assets/icon/app_icon.png` (1024×1024 recommended, safe margin).
 2. Run `dart run flutter_launcher_icons`.
-3. Run `dart run flutter_native_splash:create` (splash uses the same logo).
-4. Reinstall app on device.
+3. Reinstall app on device.
 
-### Regenerate splash only
+### Regenerate native splash colors
 
-After editing `flutter_native_splash` colors or logo in `pubspec.yaml`:
+After editing `flutter_native_splash` colors in `pubspec.yaml`:
 
 ```bash
 dart run flutter_native_splash:create
 ```
 
-Splash animation timing lives in `SplashScreen.displayDuration` (default 2400 ms).
+Native splash is **color-only** (no logo). Logo animation lives in `SplashScreen`.
+Splash timing: `SplashScreen.displayDuration` (default 2400 ms).
+Launch polish: `FlutterNativeSplash.preserve()` in `main.dart`, `remove()` in `SplashScreen`.
 
 ### Update About content
 
@@ -182,7 +184,7 @@ Edit `AppConstants` in `lib/core/constants/app_constants.dart`:
 
 - `appVersion`, `appAuthor`, `appDescription`
 - `appFeatures` list
-- `repositoryUrl`
+- `appContactEmail`
 
 No provider changes needed — `AboutSheet` reads constants directly.
 
@@ -233,5 +235,5 @@ flutter analyze
 | Templates | `template_service.dart`, `templates_screen.dart` |
 | Export | `export_service.dart`, `svg_generator.dart` |
 | About | `about_sheet.dart`, `app_constants.dart` |
-| Splash | `splash_screen.dart`, `pubspec.yaml` → `flutter_native_splash` |
+| Splash | `main.dart`, `splash_screen.dart`, `pubspec.yaml`, Android `values/colors.xml` |
 | Icons | `pubspec.yaml` → `flutter_launcher_icons`, `assets/icon/` |

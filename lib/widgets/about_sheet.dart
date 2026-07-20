@@ -75,16 +75,9 @@ class _AboutSheet extends StatelessWidget {
               const SizedBox(height: AppConstants.paddingSmall),
               _AboutInfoCard(
                 theme: theme,
-                icon: Icons.code_rounded,
-                label: 'Built with',
-                value: 'Flutter · Provider · Material 3',
-              ),
-              const SizedBox(height: AppConstants.paddingSmall),
-              _AboutInfoCard(
-                theme: theme,
-                icon: Icons.link_rounded,
-                label: 'Repository',
-                value: AppConstants.repositoryUrl,
+                icon: Icons.mail_outline_rounded,
+                label: 'Contact',
+                value: AppConstants.appContactEmail,
               ),
               const SizedBox(height: AppConstants.paddingLarge),
               FilledButton(

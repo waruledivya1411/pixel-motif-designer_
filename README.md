@@ -44,8 +44,8 @@ A production-quality Flutter application for designing pixel motifs. Built with 
 | Export SVG | ✅ Done | Saves to `Downloads/Pixel Motif Designer` (Android) |
 | Material 3 UI | ✅ Done | Blue branding (light), slate surfaces (dark) |
 | App launcher icon | ✅ Done | Generated from `assets/icon/app_icon.png` |
-| Branded splash screen | ✅ Done | Native launch + animated theme-aware intro |
-| About (drawer) | ✅ Done | App info, features, author, tech stack, repo |
+| Branded splash screen | ✅ Done | Color-only native launch + animated logo intro |
+| About (drawer) | ✅ Done | App info, features, author, contact email |
 | Save / Load projects | 🔜 Planned | Persist motifs to local storage |
 | SVG import | 🔜 Planned | Load external SVG motifs |
 
@@ -96,7 +96,7 @@ Drawer (☰):
 | Templates | `TemplatesScreen` | `TemplateService` + `loadTemplate()` |
 | Appearance | `AppearanceSheet` | `ThemeProvider` + `ThemePreferences` |
 | About | `AboutSheet` | `AppConstants` (version, author, features) |
-| Splash | `SplashScreen` | Native splash → animated intro → `HomeScreen` |
+| Splash | `SplashScreen` | Color native launch → animated intro → `HomeScreen` |
 
 ---
 
@@ -130,7 +130,7 @@ flutter run -d <device-id>
 dart run flutter_launcher_icons
 ```
 
-### Regenerate native splash (after changing logo or splash colors)
+### Regenerate native splash colors (after editing `flutter_native_splash` in pubspec)
 
 ```bash
 dart run flutter_native_splash:create
@@ -156,10 +156,10 @@ flutter analyze
 7. **Clear** — Tap **Clear** to reset all pixels (undoable).
 8. **Templates** — Drawer → **Templates** → pick a motif → **Load** (undoable).
 9. **Appearance** — Drawer → **Appearance** → Light / Dark / System Default (saved automatically).
-10. **About** — Drawer → **About** → version, features, author, repository link.
+10. **About** — Drawer → **About** → version, features, author, contact email.
 11. **Export** — **Export PNG** (gallery) or **Export SVG** (Downloads on Android).
 
-On launch, a **branded splash screen** plays briefly (logo animation, tagline, progress) before the editor opens.
+On launch, a **solid theme-colored screen** blends into the **animated splash** (logo, tagline, progress) before the editor opens.
 
 ---
 
@@ -197,9 +197,9 @@ Implementation: `ThemeProvider` → `ThemePreferences` (SharedPreferences). See 
 
 ## Launch & Splash
 
-Launch uses a **two-stage** branded experience:
+Launch uses a seamless **two-stage** experience with no black flash:
 
-1. **Native splash** — Instant OS-level screen (Android/iOS) with centered logo on theme-matched background.
+1. **Native splash (color only)** — OS-level solid background matching the active theme. No logo. Held via `FlutterNativeSplash.preserve()` until Flutter paints the first frame.
 2. **Animated splash** — Flutter `SplashScreen` (~2.4s): gradient background, pixel grid, logo scale-in, tagline, fade to home.
 
 | Mode | Background |
@@ -207,7 +207,9 @@ Launch uses a **two-stage** branded experience:
 | Light | `#E1E8F2` (app background) |
 | Dark | `#0F1218` (slate scaffold) |
 
-Configuration: `pubspec.yaml` → `flutter_native_splash`. Regenerate after logo changes:
+Android `NormalTheme` window colors match these values so there is no black gap during engine startup.
+
+Configuration: `pubspec.yaml` → `flutter_native_splash` (colors only). Regenerate after color changes:
 
 ```bash
 dart run flutter_native_splash:create
@@ -222,8 +224,7 @@ Drawer → **About** opens a Material 3 bottom sheet with:
 - App name and version (`1.0.0`)
 - Short description and feature highlights
 - **Author:** Divya Warule
-- **Built with:** Flutter · Provider · Material 3
-- **Repository:** [github.com/waruledivya1411/pixel-motif-designer_](https://github.com/waruledivya1411/pixel-motif-designer_)
+- **Contact:** waruledivya14@gmail.com
 
 Copy lives in `AppConstants` (`app_constants.dart`) so About stays in sync with documentation.
 
@@ -287,7 +288,7 @@ The app follows strict layering: **UI → Providers → Services → Models → 
 | `permission_handler` | Gallery permissions |
 | `xml` | SVG generation |
 | `flutter_launcher_icons` | App icon generation (dev) |
-| `flutter_native_splash` | Native launch screen generation (dev) |
+| `flutter_native_splash` | Native splash colors + launch polish (`preserve` / `remove`) |
 
 ---
 
@@ -334,7 +335,7 @@ Then **reinstall** the app to see the new icon on the home screen.
 - [x] Custom color picker (HSV)
 - [x] Light / Dark / System themes
 - [x] Branded app launcher icon
-- [x] Branded splash screen (native + animated)
+- [x] Branded splash screen (color native + animated logo)
 - [x] About section in navigation drawer
 - [ ] Save / load motif projects
 - [ ] Import motifs from SVG

@@ -258,21 +258,25 @@ main() → ThemePreferences.loadThemeMode()
 ### Bootstrap flow
 
 ```
-OS native splash (flutter_native_splash)
-  → main() loads ThemePreferences
+OS native splash (solid theme color, no logo)
+  → main() preserves splash via FlutterNativeSplash.preserve()
+  → ThemePreferences.loadThemeMode()
   → PixelMotifApp → MaterialApp(home: SplashScreen)
+  → SplashScreen first frame → FlutterNativeSplash.remove()
   → SplashScreen animation (~2.4s)
   → pushReplacement → HomeScreen
 ```
 
 ### Native layer
 
-`flutter_native_splash` generates Android/iOS launch assets from `assets/icon/app_icon.png`:
+`flutter_native_splash` generates Android/iOS **color-only** launch backgrounds (no logo image):
 
 | Setting | Light | Dark |
 |---------|-------|------|
 | Background | `#E1E8F2` | `#0F1218` |
-| Logo | Centered app icon | Same |
+| Logo | None (animated splash only) | None |
+
+Android also sets `NormalTheme` `windowBackground` to `@color/splash_background` so the window never flashes black while the Flutter engine starts.
 
 Regenerate: `dart run flutter_native_splash:create`
 
@@ -280,6 +284,7 @@ Regenerate: `dart run flutter_native_splash:create`
 
 `SplashScreen` (`lib/screens/splash/splash_screen.dart`):
 
+- Calls `FlutterNativeSplash.remove()` after the first frame is painted.
 - Reads active `ThemeData` for gradient and accent colors.
 - Animates logo scale, text fade, and pixel grid background.
 - Uses `Image.asset('assets/icon/app_icon.png')` — asset declared in `pubspec.yaml`.
@@ -299,7 +304,7 @@ Content is sourced from `AppConstants` (single source of truth):
 | `appDescription` | Summary paragraph |
 | `appFeatures` | Bullet list of capabilities |
 | `appAuthor` | Credit line |
-| `repositoryUrl` | Public GitHub link |
+| `appContactEmail` | Contact email |
 
 No provider involvement — presentation-only bottom sheet.
 
@@ -395,7 +400,7 @@ lib/
 ├── widgets/            # Reusable UI (drawer, about, palette, grid)
 └── exports/
 
-assets/icon/app_icon.png   # Launcher icon + splash logo source
+assets/icon/app_icon.png   # Launcher icon + animated splash logo
 
 test/                        # Unit & widget tests
 docs/DEVELOPER_GUIDE.md      # API & flow reference
