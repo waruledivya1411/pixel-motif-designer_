@@ -32,6 +32,9 @@ dependencies:
   # Parses and generates SVG/XML motif data.
   xml: ^6.5.0
 
+  # Shares SVG files so users can save to Downloads/Files on mobile.
+  share_plus: ^12.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

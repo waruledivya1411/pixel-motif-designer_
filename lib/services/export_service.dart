@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../core/constants/color_constants.dart';
 import '../core/constants/grid_constants.dart';
@@ -51,13 +52,13 @@ class ExportService {
 
   /// Generates an SVG from [state] and saves it to Downloads/Documents.
   ///
-  /// SVG files are always written to a user-accessible directory because
-  /// gallery APIs are image-specific and vector files belong in Documents.
+  /// On mobile, opens the system share sheet so the user can save to
+  /// Downloads or Files (SVG is not a gallery image like PNG).
   Future<ExportResult> exportMotifAsSvg(CanvasState state) async {
     try {
       final svgContent = SvgGenerator.generateFromCanvas(state);
       final fileName = _buildFileName('svg');
-      await _saveTextToDownloadsOrDocuments(svgContent, fileName);
+      await _saveSvgToUserAccessibleLocation(svgContent, fileName);
       return ExportResult.success;
     } catch (_) {
       return ExportResult.failure;
@@ -93,7 +94,42 @@ class ExportService {
     await file.writeAsBytes(bytes, flush: true);
   }
 
-  /// Writes text-based exports (e.g. SVG) to a user-accessible directory.
+  /// Saves SVG to a user-accessible location for the current platform.
+  static Future<void> _saveSvgToUserAccessibleLocation(
+    String content,
+    String fileName,
+  ) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      await _shareSvgOnMobile(content, fileName);
+      return;
+    }
+
+    await _saveTextToDownloadsOrDocuments(content, fileName);
+  }
+
+  /// Writes SVG to a temp file and opens the system share sheet on mobile.
+  ///
+  /// Users can tap "Save to Files" or a file manager to store in Downloads.
+  /// This avoids scoped-storage issues that hide files in app-private folders.
+  static Future<void> _shareSvgOnMobile(String content, String fileName) async {
+    final tempDir = await getTemporaryDirectory();
+    final file = File('${tempDir.path}/$fileName');
+    await file.writeAsString(content, flush: true);
+
+    await Share.shareXFiles(
+      [
+        XFile(
+          file.path,
+          mimeType: 'image/svg+xml',
+          name: fileName,
+        ),
+      ],
+      subject: 'Pixel Motif Designer SVG',
+      text: 'Save this SVG to your Downloads or Files folder.',
+    );
+  }
+
+  /// Writes text-based exports to Downloads/Documents on desktop platforms.
   static Future<void> _saveTextToDownloadsOrDocuments(
     String content,
     String fileName,

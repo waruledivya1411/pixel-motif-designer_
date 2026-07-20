@@ -80,7 +80,7 @@ class ExportSection extends StatelessWidget {
     if (!context.mounted) return;
     _showSnackBar(
       context,
-      successMessage: '✅ SVG exported successfully',
+      successMessage: '✅ SVG ready — save via the share menu',
       failureMessage: '❌ SVG export failed',
       result: result,
     );
