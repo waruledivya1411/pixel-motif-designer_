@@ -11,6 +11,9 @@ import '../models/pixel.dart';
 /// All mutation flows through [_commit], which guarantees listeners are
 /// notified only when state actually changes.
 class CanvasProvider extends ChangeNotifier {
+  /// Maximum number of undo steps retained in memory.
+  static const int maxHistorySize = 30;
+
   /// Current immutable canvas snapshot — the single source of truth.
   CanvasState _state;
 
@@ -41,8 +44,23 @@ class CanvasProvider extends ChangeNotifier {
   /// Total cells in the grid ([gridRows] × [gridColumns]).
   int get totalPixelCount => _state.gridRows * _state.gridColumns;
 
+  /// Whether an undo step is available.
+  bool get canUndo => _undoStack.isNotEmpty;
+
+  /// Whether a redo step is available.
+  bool get canRedo => _redoStack.isNotEmpty;
+
   /// Running tally of filled pixels — updated O(1) per draw/erase/clear.
   late int _filledPixelCount;
+
+  final List<CanvasHistorySnapshot> _undoStack = [];
+  final List<CanvasHistorySnapshot> _redoStack = [];
+
+  /// Canvas snapshot taken at the start of the current pointer stroke.
+  CanvasHistorySnapshot? _strokeBaseline;
+
+  /// Whether the active stroke changed any pixels.
+  bool _strokeModified = false;
 
   /// Creates a provider with an optional pre-built [initialState].
   CanvasProvider({CanvasState? initialState})
@@ -80,7 +98,7 @@ class CanvasProvider extends ChangeNotifier {
     final wasFilled = pixel.isFilled;
     final painted = pixel.copyWith(color: _state.activeColor);
     if (!wasFilled) _filledPixelCount++;
-    _commit(_state.withPixelAt(row, column, painted));
+    _commitDuringStroke(_state.withPixelAt(row, column, painted));
   }
 
   /// Clears the cell at [row], [column] back to empty.
@@ -93,7 +111,7 @@ class CanvasProvider extends ChangeNotifier {
     if (!pixel.isFilled) return;
 
     _filledPixelCount--;
-    _commit(
+    _commitDuringStroke(
       _state.withPixelAt(
         row,
         column,
@@ -122,10 +140,18 @@ class CanvasProvider extends ChangeNotifier {
   void beginStroke() {
     _strokeRow = null;
     _strokeColumn = null;
+    _strokeModified = false;
+    _strokeBaseline = CanvasHistorySnapshot.fromState(_state);
   }
 
-  /// Marks the end of a pointer stroke and clears transient drag tracking.
+  /// Marks the end of a pointer stroke and records one undo step when needed.
   void endStroke() {
+    if (_strokeModified && _strokeBaseline != null) {
+      _pushUndo(_strokeBaseline!);
+      _redoStack.clear();
+    }
+    _strokeBaseline = null;
+    _strokeModified = false;
     _strokeRow = null;
     _strokeColumn = null;
   }
@@ -163,7 +189,7 @@ class CanvasProvider extends ChangeNotifier {
     ).pixels;
 
     _filledPixelCount = 0;
-    _commit(_state.copyWith(pixels: emptyPixels));
+    _commitWithHistory(_state.copyWith(pixels: emptyPixels));
   }
 
   /// Rebuilds the canvas at [size] × [size] with a blank pixel matrix.
@@ -177,7 +203,7 @@ class CanvasProvider extends ChangeNotifier {
     endStroke();
 
     _filledPixelCount = 0;
-    _commit(
+    _commitWithHistory(
       CanvasState.initial(
         gridRows: size,
         gridColumns: size,
@@ -205,7 +231,7 @@ class CanvasProvider extends ChangeNotifier {
     }
 
     _filledPixelCount = filledCount;
-    _commit(
+    _commitWithHistory(
       CanvasState(
         gridRows: gridSize,
         gridColumns: gridSize,
@@ -216,10 +242,58 @@ class CanvasProvider extends ChangeNotifier {
     );
   }
 
-  /// Applies [newState] and notifies listeners only on a real change.
-  ///
-  /// Centralizing commits here is the performance gate: every public method
-  /// funnels through this check so [notifyListeners] never fires for no-ops.
+  /// Restores the previous canvas snapshot from the undo stack.
+  void undo() {
+    if (_undoStack.isEmpty) return;
+
+    endStroke();
+    _redoStack.add(CanvasHistorySnapshot.fromState(_state));
+    _restoreSnapshot(_undoStack.removeLast());
+  }
+
+  /// Re-applies a snapshot that was previously undone.
+  void redo() {
+    if (_redoStack.isEmpty) return;
+
+    endStroke();
+    _pushUndo(CanvasHistorySnapshot.fromState(_state));
+    _restoreSnapshot(_redoStack.removeLast());
+  }
+
+  /// Persists [snapshot] on the undo stack and enforces [maxHistorySize].
+  void _pushUndo(CanvasHistorySnapshot snapshot) {
+    _undoStack.add(snapshot);
+    if (_undoStack.length > maxHistorySize) {
+      _undoStack.removeAt(0);
+    }
+  }
+
+  void _restoreSnapshot(CanvasHistorySnapshot snapshot) {
+    final restored = snapshot.applyTo(_state);
+    if (restored == _state) return;
+    _state = restored;
+    _filledPixelCount = _state.filledPixelCount;
+    notifyListeners();
+  }
+
+  /// Commits in-progress stroke pixels without creating a history entry.
+  void _commitDuringStroke(CanvasState newState) {
+    if (newState == _state) return;
+    _strokeModified = true;
+    _state = newState;
+    notifyListeners();
+  }
+
+  /// Commits a discrete operation and records the pre-change canvas for undo.
+  void _commitWithHistory(CanvasState newState) {
+    if (newState == _state) return;
+    _pushUndo(CanvasHistorySnapshot.fromState(_state));
+    _redoStack.clear();
+    _state = newState;
+    notifyListeners();
+  }
+
+  /// Applies [newState] without touching undo/redo stacks.
   void _commit(CanvasState newState) {
     if (newState == _state) return;
     _state = newState;

@@ -48,13 +48,25 @@ abstract final class AppTheme {
           surfaceContainer: AppColors.darkSurfaceContainer,
         ),
         scaffoldBackground: AppColors.darkBackground,
+        appBarBackground: AppColors.darkAppBar,
+        drawerBackground: AppColors.darkSurface,
       );
 
   static ThemeData _buildTheme({
     required Brightness brightness,
     required ColorScheme colorScheme,
     required Color scaffoldBackground,
+    Color? appBarBackground,
+    Color? drawerBackground,
   }) {
+    final isDark = brightness == Brightness.dark;
+    final barBackground = appBarBackground ??
+        (isDark ? colorScheme.surface : colorScheme.primary);
+    final barForeground =
+        isDark ? colorScheme.onSurface : colorScheme.onPrimary;
+    final navDrawerBackground = drawerBackground ??
+        (isDark ? colorScheme.surface : colorScheme.primaryContainer);
+
     final buttonShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppConstants.borderRadius),
     );
@@ -75,19 +87,19 @@ abstract final class AppTheme {
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 2,
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
+        backgroundColor: barBackground,
+        foregroundColor: barForeground,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: TextStyle(
-          color: colorScheme.onPrimary,
+          color: barForeground,
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
-        iconTheme: IconThemeData(color: colorScheme.onPrimary),
-        actionsIconTheme: IconThemeData(color: colorScheme.onPrimary),
+        iconTheme: IconThemeData(color: barForeground),
+        actionsIconTheme: IconThemeData(color: barForeground),
       ),
       drawerTheme: DrawerThemeData(
-        backgroundColor: colorScheme.primaryContainer,
+        backgroundColor: navDrawerBackground,
         surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(

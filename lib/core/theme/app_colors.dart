@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 /// Semantic color tokens for the application theme.
 ///
-/// Separating raw color values from [ThemeData] construction keeps
-/// the theme layer easy to extend for dark mode later.
+/// Light mode uses confident Material Blue branding; dark mode uses neutral
+/// slate surfaces with a soft accent so night viewing stays comfortable.
 abstract final class AppColors {
-  /// Primary brand blue — app bar, buttons, and accents.
+  /// Primary brand blue — app bar, buttons, and accents (light mode).
   static const Color primary = Color(0xFF1976D2);
 
-  /// Soft blue wash for drawer, headers, and selected states.
+  /// Soft blue wash for drawer, headers, and selected states (light mode).
   static const Color primaryContainer = Color(0xFFE3F2FD);
 
   /// Text and icons on primary blue surfaces.
@@ -36,36 +36,39 @@ abstract final class AppColors {
   static const Color outline = Color(0xFF90A4C6);
 
   // ---------------------------------------------------------------------------
-  // Dark theme tokens — mirror light semantics for Material 3 dark surfaces.
+  // Dark theme — neutral slate base with restrained blue accent (not day-blue).
   // ---------------------------------------------------------------------------
 
   /// Dark scaffold background.
-  static const Color darkBackground = Color(0xFF0D1117);
+  static const Color darkBackground = Color(0xFF0F1218);
 
-  /// Dark elevated surface for cards, drawer, and app bar.
-  static const Color darkSurface = Color(0xFF1A2332);
+  /// Dark elevated surface for cards and panels.
+  static const Color darkSurface = Color(0xFF1A1F28);
+
+  /// App bar surface — slightly elevated from [darkSurface].
+  static const Color darkAppBar = Color(0xFF222831);
 
   /// Nested surface inside dark cards.
-  static const Color darkSurfaceContainer = Color(0xFF243044);
+  static const Color darkSurfaceContainer = Color(0xFF2A303C);
 
-  /// Primary accent tuned for dark surfaces.
-  static const Color darkPrimary = Color(0xFF90CAF9);
+  /// Soft accent for buttons, icons, and progress (not a bright day-blue).
+  static const Color darkPrimary = Color(0xFF6EA8FE);
 
-  /// Blue-tinted container for drawer and selected states in dark mode.
-  static const Color darkPrimaryContainer = Color(0xFF1E3A5F);
+  /// Subtle chip / container tint — charcoal with a hint of cool tone.
+  static const Color darkPrimaryContainer = Color(0xFF2D3644);
 
-  /// High-contrast text on dark primary actions.
-  static const Color darkOnPrimary = Color(0xFF0A1929);
+  /// Text on filled accent buttons in dark mode.
+  static const Color darkOnPrimary = Color(0xFF0F1218);
 
-  /// Text on dark blue containers.
-  static const Color darkOnPrimaryContainer = Color(0xFFE3F2FD);
+  /// Text on dark tinted containers.
+  static const Color darkOnPrimaryContainer = Color(0xFFB8C5D9);
 
   /// Primary body text on dark surfaces.
-  static const Color darkOnSurface = Color(0xFFE6E1E5);
+  static const Color darkOnSurface = Color(0xFFE8EAED);
 
   /// Secondary text on dark surfaces.
-  static const Color darkOnSurfaceVariant = Color(0xFFB0BEC5);
+  static const Color darkOnSurfaceVariant = Color(0xFF9AA3AF);
 
   /// Outline and dividers on dark surfaces.
-  static const Color darkOutline = Color(0xFF546E7A);
+  static const Color darkOutline = Color(0xFF3A424F);
 }

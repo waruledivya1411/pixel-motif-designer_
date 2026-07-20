@@ -194,3 +194,46 @@ class CanvasState {
   String toString() =>
       'CanvasState(gridRows: $gridRows, gridColumns: $gridColumns, activeColor: 0x${activeColor.toRadixString(16).padLeft(8, '0')}, selectedTool: $selectedTool, filledPixelCount: $filledPixelCount)';
 }
+
+/// Immutable pixel-matrix snapshot stored on the undo/redo stacks.
+///
+/// Captures grid dimensions and cell data only — [activeColor] and
+/// [selectedTool] stay with the live session when history is restored.
+class CanvasHistorySnapshot {
+  const CanvasHistorySnapshot({
+    required this.gridRows,
+    required this.gridColumns,
+    required this.pixels,
+  });
+
+  final int gridRows;
+  final int gridColumns;
+  final List<List<Pixel>> pixels;
+
+  /// Builds an independent copy of [state] suitable for the history stack.
+  factory CanvasHistorySnapshot.fromState(CanvasState state) {
+    return CanvasHistorySnapshot(
+      gridRows: state.gridRows,
+      gridColumns: state.gridColumns,
+      pixels: _cloneMatrix(state.pixels),
+    );
+  }
+
+  /// Merges this snapshot into [current], preserving tool and color choices.
+  CanvasState applyTo(CanvasState current) {
+    return CanvasState(
+      gridRows: gridRows,
+      gridColumns: gridColumns,
+      activeColor: current.activeColor,
+      selectedTool: current.selectedTool,
+      pixels: _cloneMatrix(pixels),
+    );
+  }
+
+  static List<List<Pixel>> _cloneMatrix(List<List<Pixel>> source) {
+    return [
+      for (final row in source)
+        [for (final pixel in row) pixel],
+    ];
+  }
+}

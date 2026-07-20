@@ -149,13 +149,19 @@ class _TemplatesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(AppConstants.paddingMedium),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
+        color: isDark
+            ? theme.colorScheme.surfaceContainerHighest
+            : theme.colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.35),
+          color: isDark
+              ? theme.colorScheme.outline.withValues(alpha: 0.55)
+              : theme.colorScheme.primary.withValues(alpha: 0.35),
         ),
       ),
       child: Row(
@@ -165,12 +171,19 @@ class _TemplatesHeader extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
+              color: theme.colorScheme.primary.withValues(
+                alpha: isDark ? 0.18 : 1,
+              ),
               borderRadius: BorderRadius.circular(12),
+              border: isDark
+                  ? Border.all(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                    )
+                  : null,
             ),
             child: Icon(
               Icons.auto_awesome_rounded,
-              color: theme.colorScheme.onPrimary,
+              color: theme.colorScheme.primary,
             ),
           ),
           const SizedBox(width: AppConstants.paddingMedium),
@@ -182,15 +195,19 @@ class _TemplatesHeader extends StatelessWidget {
                   'Pick a starter motif',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onPrimaryContainer,
+                    color: isDark
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onPrimaryContainer,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Templates load instantly onto your canvas with their original colors.',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer
-                        .withValues(alpha: 0.85),
+                    color: isDark
+                        ? theme.colorScheme.onSurfaceVariant
+                        : theme.colorScheme.onPrimaryContainer
+                            .withValues(alpha: 0.85),
                   ),
                 ),
               ],

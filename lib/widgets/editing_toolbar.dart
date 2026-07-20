@@ -36,6 +36,8 @@ class EditingToolbar extends StatelessWidget {
             tooltip: 'Erase pixels to transparent',
           ),
           _ClearCanvasButton(),
+          _UndoButton(),
+          _RedoButton(),
         ],
       ),
     );
@@ -179,6 +181,112 @@ class _ClearCanvasButton extends StatelessWidget {
             minimumSize: const Size(0, AppConstants.minTouchTarget),
             side: BorderSide(
               color: theme.colorScheme.error.withValues(alpha: 0.5),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.paddingMedium,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Reverts the canvas to the previous history snapshot.
+class _UndoButton extends StatelessWidget {
+  const _UndoButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final canUndo = context.select<CanvasProvider, bool>(
+      (provider) => provider.canUndo,
+    );
+    final theme = Theme.of(context);
+
+    return Tooltip(
+      message: canUndo ? 'Undo last action' : 'Nothing to undo',
+      child: Semantics(
+        label: 'Undo',
+        button: true,
+        enabled: canUndo,
+        child: OutlinedButton.icon(
+          onPressed: canUndo
+              ? () => context.read<CanvasProvider>().undo()
+              : null,
+          icon: Icon(
+            Icons.undo_rounded,
+            size: 20,
+            color: canUndo
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
+          ),
+          label: Text(
+            'Undo',
+            style: TextStyle(
+              color: canUndo
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, AppConstants.minTouchTarget),
+            side: BorderSide(
+              color: canUndo
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outline.withValues(alpha: 0.35),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.paddingMedium,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Restores the canvas state that was last undone.
+class _RedoButton extends StatelessWidget {
+  const _RedoButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final canRedo = context.select<CanvasProvider, bool>(
+      (provider) => provider.canRedo,
+    );
+    final theme = Theme.of(context);
+
+    return Tooltip(
+      message: canRedo ? 'Redo last undone action' : 'Nothing to redo',
+      child: Semantics(
+        label: 'Redo',
+        button: true,
+        enabled: canRedo,
+        child: OutlinedButton.icon(
+          onPressed: canRedo
+              ? () => context.read<CanvasProvider>().redo()
+              : null,
+          icon: Icon(
+            Icons.redo_rounded,
+            size: 20,
+            color: canRedo
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
+          ),
+          label: Text(
+            'Redo',
+            style: TextStyle(
+              color: canRedo
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, AppConstants.minTouchTarget),
+            side: BorderSide(
+              color: canRedo
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outline.withValues(alpha: 0.35),
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: AppConstants.paddingMedium,

@@ -19,7 +19,7 @@ class AppDrawer extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Drawer(
-      backgroundColor: theme.colorScheme.primaryContainer,
+      backgroundColor: theme.drawerTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(AppConstants.borderRadius),
@@ -62,7 +62,9 @@ class AppDrawer extends StatelessWidget {
                     child: Text(
                       'Canvas settings',
                       style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
+                        color: theme.brightness == Brightness.dark
+                            ? theme.colorScheme.onSurfaceVariant
+                            : theme.colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -78,7 +80,7 @@ class AppDrawer extends StatelessWidget {
   }
 }
 
-/// Branded drawer header aligned with the blue app bar.
+/// Branded drawer header — blue in light mode, elevated slate in dark mode.
 class _DrawerHeader extends StatelessWidget {
   const _DrawerHeader({required this.theme});
 
@@ -86,6 +88,24 @@ class _DrawerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = theme.brightness == Brightness.dark;
+    final headerBackground = isDark
+        ? theme.colorScheme.surfaceContainerHighest
+        : theme.colorScheme.primary;
+    final titleColor =
+        isDark ? theme.colorScheme.onSurface : theme.colorScheme.onPrimary;
+    final subtitleColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : theme.colorScheme.onPrimary.withValues(alpha: 0.85);
+    final iconBackground = isDark
+        ? theme.colorScheme.primary.withValues(alpha: 0.15)
+        : theme.colorScheme.onPrimary.withValues(alpha: 0.15);
+    final iconBorder = isDark
+        ? theme.colorScheme.primary.withValues(alpha: 0.35)
+        : theme.colorScheme.onPrimary.withValues(alpha: 0.35);
+    final iconColor =
+        isDark ? theme.colorScheme.primary : theme.colorScheme.onPrimary;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppConstants.paddingMedium,
@@ -94,10 +114,12 @@ class _DrawerHeader extends StatelessWidget {
         AppConstants.paddingMedium,
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
+        color: headerBackground,
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.onPrimary.withValues(alpha: 0.2),
+            color: isDark
+                ? theme.colorScheme.outline.withValues(alpha: 0.5)
+                : theme.colorScheme.onPrimary.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -107,15 +129,13 @@ class _DrawerHeader extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.15),
+              color: iconBackground,
               borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-              border: Border.all(
-                color: theme.colorScheme.onPrimary.withValues(alpha: 0.35),
-              ),
+              border: Border.all(color: iconBorder),
             ),
             child: Icon(
               Icons.grid_view_rounded,
-              color: theme.colorScheme.onPrimary,
+              color: iconColor,
             ),
           ),
           const SizedBox(width: AppConstants.paddingMedium),
@@ -127,14 +147,14 @@ class _DrawerHeader extends StatelessWidget {
                   AppConstants.appName,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onPrimary,
+                    color: titleColor,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Design your pixel motifs',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+                    color: subtitleColor,
                   ),
                 ),
               ],
@@ -186,13 +206,15 @@ class _DrawerNavTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
       child: Material(
-        color: theme.colorScheme.surface,
+        color: theme.brightness == Brightness.dark
+            ? theme.colorScheme.surfaceContainerHighest
+            : theme.colorScheme.surface,
         elevation: 1,
-        shadowColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+        shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           side: BorderSide(
-            color: theme.colorScheme.primary.withValues(alpha: 0.25),
+            color: theme.colorScheme.outline.withValues(alpha: 0.55),
           ),
         ),
         child: ListTile(
@@ -209,7 +231,9 @@ class _DrawerNavTile extends StatelessWidget {
             label,
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onPrimaryContainer,
+              color: theme.brightness == Brightness.dark
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onPrimaryContainer,
             ),
           ),
           subtitle: subtitle == null

@@ -73,14 +73,22 @@ class PixelCounterCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppConstants.paddingSmall),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 8,
-                backgroundColor:
-                    theme.colorScheme.surface.withValues(alpha: 0.6),
-                color: theme.colorScheme.primary,
+            DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 8,
+                  backgroundColor:
+                      theme.colorScheme.primary.withValues(alpha: 0.22),
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
             const SizedBox(height: 4),
