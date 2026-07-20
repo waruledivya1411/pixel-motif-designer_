@@ -9,6 +9,9 @@ abstract final class GridConstants {
   /// Default number of rows in the motif grid.
   static const int defaultRowCount = defaultGridSize;
 
+  /// Square grid dimensions offered in the grid size selector.
+  static const List<int> supportedGridSizes = [8, defaultGridSize, 32];
+
   /// Logical pixel size of a single grid cell on screen.
   static const double defaultCellSize = 20.0;
 

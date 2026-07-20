@@ -11,10 +11,6 @@ import '../models/pixel.dart';
 /// All mutation flows through [_commit], which guarantees listeners are
 /// notified only when state actually changes.
 class CanvasProvider extends ChangeNotifier {
-  /// Creates a provider with an optional pre-built [initialState].
-  CanvasProvider({CanvasState? initialState})
-      : _state = initialState ?? CanvasState.initial();
-
   /// Current immutable canvas snapshot — the single source of truth.
   CanvasState _state;
 
@@ -35,6 +31,25 @@ class CanvasProvider extends ChangeNotifier {
 
   /// Number of grid columns.
   int get gridColumns => _state.gridColumns;
+
+  /// Count of painted cells on the current canvas.
+  ///
+  /// Maintained incrementally in draw/erase/clear/resize handlers so widgets
+  /// never scan the full pixel matrix on each rebuild.
+  int get filledPixelCount => _filledPixelCount;
+
+  /// Total cells in the grid ([gridRows] × [gridColumns]).
+  int get totalPixelCount => _state.gridRows * _state.gridColumns;
+
+  /// Running tally of filled pixels — updated O(1) per draw/erase/clear.
+  late int _filledPixelCount;
+
+  /// Creates a provider with an optional pre-built [initialState].
+  CanvasProvider({CanvasState? initialState})
+      : _state = initialState ?? CanvasState.initial() {
+    // Full-matrix scan runs once at startup, not on every frame.
+    _filledPixelCount = _state.filledPixelCount;
+  }
 
   /// Updates the active paint color.
   ///
@@ -62,7 +77,9 @@ class CanvasProvider extends ChangeNotifier {
     if (pixel == null) return;
     if (pixel.color == _state.activeColor) return;
 
+    final wasFilled = pixel.isFilled;
     final painted = pixel.copyWith(color: _state.activeColor);
+    if (!wasFilled) _filledPixelCount++;
     _commit(_state.withPixelAt(row, column, painted));
   }
 
@@ -75,6 +92,7 @@ class CanvasProvider extends ChangeNotifier {
     if (pixel == null) return;
     if (!pixel.isFilled) return;
 
+    _filledPixelCount--;
     _commit(
       _state.withPixelAt(
         row,
@@ -137,14 +155,36 @@ class CanvasProvider extends ChangeNotifier {
   ///
   /// Skips notification when the canvas is already blank.
   void clearCanvas() {
-    if (_state.filledPixelCount == 0) return;
+    if (_filledPixelCount == 0) return;
 
     final emptyPixels = CanvasState.initial(
       gridRows: _state.gridRows,
       gridColumns: _state.gridColumns,
     ).pixels;
 
+    _filledPixelCount = 0;
     _commit(_state.copyWith(pixels: emptyPixels));
+  }
+
+  /// Rebuilds the canvas at [size] × [size] with a blank pixel matrix.
+  ///
+  /// Preserves [activeColor] and [selectedTool] so the user can keep
+  /// painting immediately after resizing. No-op when [size] already matches
+  /// the current square grid dimensions.
+  void changeGridSize(int size) {
+    if (_state.gridRows == size && _state.gridColumns == size) return;
+
+    endStroke();
+
+    _filledPixelCount = 0;
+    _commit(
+      CanvasState.initial(
+        gridRows: size,
+        gridColumns: size,
+        activeColor: _state.activeColor,
+        selectedTool: _state.selectedTool,
+      ),
+    );
   }
 
   /// Applies [newState] and notifies listeners only on a real change.

@@ -66,6 +66,9 @@ class PixelGrid extends StatelessWidget {
                 borderRadius:
                     BorderRadius.circular(AppConstants.borderRadius - 1),
                 child: _PixelGridGestureLayer(
+                  key: ValueKey(
+                    'pixel-grid-${dimensions.rows}x${dimensions.columns}',
+                  ),
                   rows: dimensions.rows,
                   columns: dimensions.columns,
                   cellSize: resolvedCellSize,
@@ -121,6 +124,7 @@ class _PixelGridGestureLayer extends StatefulWidget {
     required this.columns,
     required this.cellSize,
     required this.child,
+    super.key,
   });
 
   final int rows;

@@ -8,5 +8,7 @@ library;
 export 'color_palette.dart';
 export 'editing_toolbar.dart';
 export 'export_section.dart';
+export 'grid_size_selector.dart';
 export 'pixel_cell.dart';
+export 'pixel_counter_card.dart';
 export 'pixel_grid.dart';

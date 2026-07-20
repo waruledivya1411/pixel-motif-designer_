@@ -5,13 +5,14 @@ import '../../widgets/color_palette.dart';
 import '../../widgets/editing_toolbar.dart';
 import '../../widgets/editor_panel.dart';
 import '../../widgets/export_section.dart';
+import '../../widgets/grid_size_selector.dart';
+import '../../widgets/pixel_counter_card.dart';
 import '../../widgets/pixel_grid.dart';
 
 /// Primary landing screen for the application.
 ///
-/// Layout: AppBar → [ColorPalette] → [EditingToolbar] → [PixelGrid] → [ExportSection].
-/// Uses a scrollable, width-constrained column so content stays balanced on
-/// small phones and larger devices without changing feature behavior.
+/// Fixed vertical layout (no scroll): palette → toolbar → counter → grid →
+/// export. Grid size lives in the navigation drawer.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -21,21 +22,51 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(AppConstants.appName),
       ),
+      drawer: Drawer(
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                margin: EdgeInsets.zero,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                ),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    'Canvas settings',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer,
+                        ),
+                  ),
+                ),
+              ),
+              const GridSizeSelector(),
+            ],
+          ),
+        ),
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
+            final contentWidth = constraints.maxWidth.clamp(
+              0.0,
+              AppConstants.maxContentWidth,
+            );
+            final gridMaxWidth = contentWidth - AppConstants.paddingMedium * 4;
+
+            return Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppConstants.paddingMedium,
                 vertical: AppConstants.paddingSmall,
               ),
               child: Align(
                 alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: AppConstants.maxContentWidth,
-                    minWidth: 0,
-                  ),
+                child: SizedBox(
+                  width: contentWidth,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -49,12 +80,29 @@ class HomeScreen extends StatelessWidget {
                         child: EditingToolbar(),
                       ),
                       const SizedBox(height: AppConstants.sectionSpacing),
-                      EditorPanel(
-                        semanticLabel: 'Pixel canvas',
-                        child: PixelGrid(
-                          maxWidth: constraints.maxWidth -
-                              AppConstants.paddingMedium * 2 -
-                              AppConstants.paddingMedium * 2,
+                      const EditorPanel(
+                        semanticLabel: 'Pixel counter',
+                        child: PixelCounterCard(),
+                      ),
+                      const SizedBox(height: AppConstants.sectionSpacing),
+                      Expanded(
+                        child: EditorPanel(
+                          semanticLabel: 'Pixel canvas',
+                          child: LayoutBuilder(
+                            builder: (context, gridConstraints) {
+                              return Center(
+                                child: FittedBox(
+                                  fit: BoxFit.contain,
+                                  child: PixelGrid(
+                                    maxWidth: gridMaxWidth.clamp(
+                                      0,
+                                      gridConstraints.maxWidth,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppConstants.sectionSpacing),
