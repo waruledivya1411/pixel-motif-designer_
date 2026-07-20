@@ -187,6 +187,35 @@ class CanvasProvider extends ChangeNotifier {
     );
   }
 
+  /// Replaces the canvas with [pixels] in a single commit.
+  ///
+  /// Used by template loading to apply a full motif at once instead of
+  /// simulating hundreds of draw calls. Preserves the active color and tool.
+  void loadTemplate({
+    required List<List<Pixel>> pixels,
+    required int gridSize,
+  }) {
+    endStroke();
+
+    var filledCount = 0;
+    for (final row in pixels) {
+      for (final pixel in row) {
+        if (pixel.isFilled) filledCount++;
+      }
+    }
+
+    _filledPixelCount = filledCount;
+    _commit(
+      CanvasState(
+        gridRows: gridSize,
+        gridColumns: gridSize,
+        activeColor: _state.activeColor,
+        selectedTool: _state.selectedTool,
+        pixels: pixels,
+      ),
+    );
+  }
+
   /// Applies [newState] and notifies listeners only on a real change.
   ///
   /// Centralizing commits here is the performance gate: every public method

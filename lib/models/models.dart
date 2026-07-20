@@ -7,3 +7,4 @@ library;
 export 'canvas_state.dart';
 export 'drawing_tool.dart';
 export 'pixel.dart';
+export 'pixel_template.dart';

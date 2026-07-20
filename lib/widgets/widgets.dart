@@ -13,3 +13,5 @@ export 'grid_size_selector.dart';
 export 'pixel_cell.dart';
 export 'pixel_counter_card.dart';
 export 'pixel_grid.dart';
+export 'template_card.dart';
+export 'template_preview.dart';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/constants/app_constants.dart';
+import '../screens/templates/templates_screen.dart';
 import 'grid_size_selector.dart';
 
 /// Navigation drawer for canvas-level settings.
@@ -30,8 +31,39 @@ class AppDrawer extends StatelessWidget {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                children: const [
-                  GridSizeSelector(),
+                children: [
+                  _DrawerNavTile(
+                    icon: Icons.home_rounded,
+                    label: 'Home',
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  _DrawerNavTile(
+                    icon: Icons.auto_awesome_rounded,
+                    label: 'Templates',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const TemplatesScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppConstants.paddingSmall,
+                      bottom: AppConstants.paddingSmall,
+                    ),
+                    child: Text(
+                      'Canvas settings',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const GridSizeSelector(),
                 ],
               ),
             ),
@@ -102,6 +134,45 @@ class _DrawerHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DrawerNavTile extends StatelessWidget {
+  const _DrawerNavTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+      child: ListTile(
+        leading: Icon(icon, color: theme.colorScheme.primary),
+        title: Text(
+          label,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+        ),
+        tileColor: theme.colorScheme.surface,
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingMedium,
+        ),
       ),
     );
   }
