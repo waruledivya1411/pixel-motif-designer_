@@ -14,22 +14,31 @@ import 'custom_color_picker_sheet.dart';
 class ColorPalette extends StatelessWidget {
   const ColorPalette({super.key});
 
+  static const double _swatchSize = 36;
+  static const double _swatchSpacing = AppConstants.paddingSmall;
+
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label: 'Color palette',
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: AppConstants.paddingMedium,
-        runSpacing: AppConstants.paddingSmall,
-        children: [
-          for (var i = 0; i < ColorConstants.drawingPalette.length; i++)
-            _ColorSwatch(
-              color: ColorConstants.drawingPalette[i],
-              slotIndex: i,
-            ),
-          const _CustomColorSwatch(),
-        ],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < ColorConstants.drawingPalette.length; i++) ...[
+              if (i > 0) const SizedBox(width: _swatchSpacing),
+              _ColorSwatch(
+                color: ColorConstants.drawingPalette[i],
+                slotIndex: i,
+                size: _swatchSize,
+              ),
+            ],
+            const SizedBox(width: _swatchSpacing),
+            const _CustomColorSwatch(size: _swatchSize),
+          ],
+        ),
       ),
     );
   }
@@ -52,12 +61,12 @@ class _ColorSwatch extends StatelessWidget {
   const _ColorSwatch({
     required this.color,
     required this.slotIndex,
+    required this.size,
   });
 
   final Color color;
   final int slotIndex;
-
-  static const double _swatchSize = AppConstants.minTouchTarget;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -87,38 +96,44 @@ class _ColorSwatch extends StatelessWidget {
               context.read<PaletteProvider>().selectPreset(slotIndex);
               context.read<CanvasProvider>().changeActiveColor(argb);
             },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-              width: _swatchSize,
-              height: _swatchSize,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : ColorConstants.gridLine,
-                  width: isSelected ? 3 : 1,
+            child: SizedBox(
+              width: AppConstants.minTouchTarget,
+              height: AppConstants.minTouchTarget,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  width: size,
+                  height: size,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : ColorConstants.gridLine,
+                      width: isSelected ? 2.5 : 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 6,
+                              spreadRadius: 0.5,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: isSelected
+                      ? Icon(
+                          Icons.check_rounded,
+                          color: checkColor,
+                          size: size * 0.55,
+                        )
+                      : null,
                 ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: theme.colorScheme.primary
-                              .withValues(alpha: 0.35),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
               ),
-              child: isSelected
-                  ? Icon(
-                      Icons.check_rounded,
-                      color: checkColor,
-                      size: 22,
-                    )
-                  : null,
             ),
           ),
         ),
@@ -129,9 +144,9 @@ class _ColorSwatch extends StatelessWidget {
 
 /// Custom color swatch placed after Yellow — opens the HSV color picker.
 class _CustomColorSwatch extends StatelessWidget {
-  const _CustomColorSwatch();
+  const _CustomColorSwatch({required this.size});
 
-  static const double _swatchSize = AppConstants.minTouchTarget;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -163,64 +178,70 @@ class _CustomColorSwatch extends StatelessWidget {
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: () => _openPicker(context, customColor),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-              width: _swatchSize,
-              height: _swatchSize,
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const SweepGradient(
-                  colors: [
-                    Color(0xFFFF0000),
-                    Color(0xFFFFFF00),
-                    Color(0xFF00FF00),
-                    Color(0xFF00FFFF),
-                    Color(0xFF0000FF),
-                    Color(0xFFFF00FF),
-                    Color(0xFFFF0000),
-                  ],
-                ),
-                border: Border.all(
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : Colors.transparent,
-                  width: 3,
-                ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: theme.colorScheme.primary
-                              .withValues(alpha: 0.35),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: customColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: theme.colorScheme.surface,
-                    width: 2,
+            child: SizedBox(
+              width: AppConstants.minTouchTarget,
+              height: AppConstants.minTouchTarget,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  width: size,
+                  height: size,
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const SweepGradient(
+                      colors: [
+                        Color(0xFFFF0000),
+                        Color(0xFFFFFF00),
+                        Color(0xFF00FF00),
+                        Color(0xFF00FFFF),
+                        Color(0xFF0000FF),
+                        Color(0xFFFF00FF),
+                        Color(0xFFFF0000),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
+                      width: 2.5,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 6,
+                              spreadRadius: 0.5,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: customColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.colorScheme.surface,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check_rounded,
+                            color: checkColor,
+                            size: size * 0.5,
+                          )
+                        : Center(
+                            child: Icon(
+                              Icons.colorize_rounded,
+                              size: size * 0.45,
+                              color: checkColor.withValues(alpha: 0.9),
+                            ),
+                          ),
                   ),
                 ),
-                child: isSelected
-                    ? Icon(
-                        Icons.check_rounded,
-                        color: checkColor,
-                        size: 20,
-                      )
-                    : Center(
-                        child: Icon(
-                          Icons.colorize_rounded,
-                          size: 18,
-                          color: checkColor.withValues(alpha: 0.9),
-                        ),
-                      ),
               ),
             ),
           ),
