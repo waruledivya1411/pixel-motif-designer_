@@ -1,6 +1,6 @@
 # Pixel Motif Designer
 
-A production-quality Flutter application for designing pixel motifs with clean architecture, Provider state management, and scalable folder structure.
+A production-quality Flutter application for designing pixel motifs with clean architecture, Provider state management, and a scalable folder structure.
 
 ## Getting Started
 
@@ -21,4 +21,19 @@ samples, guidance on mobile development, and a full API reference.
 ```bash
 flutter pub get
 flutter run
+```
+
+## Project Structure
+
+```
+lib/
+├── app.dart              # MaterialApp and global wiring
+├── main.dart             # Entry point
+├── core/                 # Constants, theme, utilities
+├── models/               # Domain data classes
+├── providers/            # ChangeNotifier state management
+├── screens/              # Feature screens
+├── widgets/              # Reusable UI components
+├── services/             # File I/O, permissions, export
+└── exports/              # Barrel exports
 ```
