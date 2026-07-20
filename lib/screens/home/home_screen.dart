@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../widgets/pixel_grid.dart';
 
 /// Primary landing screen for the application.
 ///
-/// Currently a scaffold shell — canvas, toolbar, and palette widgets
-/// will be composed here in subsequent implementation phases.
+/// Composes the scaffold shell with a centered [PixelGrid]. Toolbars,
+/// palette, and export controls will be added in later phases.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -15,8 +16,11 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(AppConstants.appName),
       ),
-      // Canvas, tool palette, and export controls will be added here.
-      body: const SizedBox.shrink(),
+      body: const Center(
+        child: SingleChildScrollView(
+          child: PixelGrid(),
+        ),
+      ),
     );
   }
 }

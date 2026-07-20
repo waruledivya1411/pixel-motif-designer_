@@ -5,4 +5,5 @@
 /// unless they are intentionally scoped feature widgets.
 library;
 
-// Shared widgets (canvas, color swatch, toolbar) will be added later.
+export 'pixel_cell.dart';
+export 'pixel_grid.dart';
