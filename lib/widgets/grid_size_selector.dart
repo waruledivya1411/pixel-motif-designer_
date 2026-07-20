@@ -51,6 +51,7 @@ class GridSizeSelector extends StatelessWidget {
                       'Grid size',
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -86,7 +87,6 @@ class GridSizeSelector extends StatelessWidget {
   static String _subtitleForSize(int size) {
     final total = size * size;
     final label = switch (size) {
-      8 => 'Compact',
       16 => 'Standard',
       32 => 'Large',
       _ => 'Custom',
@@ -153,6 +153,8 @@ class _GridSizeOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isSelected = size == selectedSize;
+    final titleColor = theme.colorScheme.onSurface;
+    final subtitleColor = theme.colorScheme.onSurfaceVariant;
 
     return Semantics(
       label: '$size by $size grid',
@@ -162,6 +164,8 @@ class _GridSizeOption extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+          splashColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+          highlightColor: theme.colorScheme.primary.withValues(alpha: 0.08),
           onTap: () => onSelected(size),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
@@ -203,18 +207,13 @@ class _GridSizeOption extends StatelessWidget {
                         '$size × $size',
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? theme.colorScheme.onPrimaryContainer
-                              : theme.colorScheme.onSurface,
+                          color: titleColor,
                         ),
                       ),
                       Text(
                         subtitle,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: isSelected
-                              ? theme.colorScheme.onPrimaryContainer
-                                  .withValues(alpha: 0.8)
-                              : theme.colorScheme.onSurfaceVariant,
+                          color: subtitleColor,
                         ),
                       ),
                     ],
@@ -252,7 +251,6 @@ class _GridPreviewIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cellCount = switch (size) {
-      8 => 3,
       16 => 4,
       32 => 5,
       _ => 4,

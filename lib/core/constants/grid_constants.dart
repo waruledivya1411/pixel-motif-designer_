@@ -10,7 +10,7 @@ abstract final class GridConstants {
   static const int defaultRowCount = defaultGridSize;
 
   /// Square grid dimensions offered in the grid size selector.
-  static const List<int> supportedGridSizes = [8, defaultGridSize, 32];
+  static const List<int> supportedGridSizes = [defaultGridSize, 32];
 
   /// Logical pixel size of a single grid cell on screen.
   static const double defaultCellSize = 20.0;

@@ -28,7 +28,7 @@ A production-quality Flutter application for designing pixel motifs. Built with 
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| Configurable grid (8×8, 16×16, 32×32) | ✅ Done | Drawer menu with confirmation before resize |
+| Configurable grid (16×16, 32×32) | ✅ Done | Drawer menu with confirmation before resize |
 | Tap-to-draw | ✅ Done | Single tap paints or erases one cell |
 | Drag drawing | ✅ Done | Continuous paint/erase while finger moves |
 | Color palette | ✅ Done | 5 swatches — Black, Red, Blue, Green, Yellow |
@@ -69,7 +69,6 @@ Drawer (☰):
 │  Canvas settings                │
 ├─────────────────────────────────┤
 │  Grid size                      │
-│  ○  8 × 8   Compact · 64 px     │
 │  ● 16 × 16  Standard · 256 px   │
 │  ○ 32 × 32  Large · 1024 px     │
 └─────────────────────────────────┘
@@ -127,7 +126,7 @@ flutter analyze
 ## How to Use
 
 1. **Open settings** — Tap the **☰ menu** (top-left) to open the drawer.
-2. **Choose grid size** — Select **8×8**, **16×16** (default), or **32×32**. Confirm when prompted; the canvas clears but your color and tool are preserved.
+2. **Choose grid size** — Select **16×16** (default) or **32×32**. Confirm when prompted; the canvas clears but your color and tool are preserved.
 3. **Pick a color** — Tap a swatch in the color palette. The active swatch shows a border and checkmark.
 4. **Select Draw** — Tap **Draw** in the toolbar (selected by default).
 5. **Paint** — Tap or drag across the grid to fill pixels with the active color.
@@ -321,7 +320,7 @@ lib/
 │
 ├── widgets/
 │   ├── app_drawer.dart         # Navigation drawer shell
-│   ├── grid_size_selector.dart # 8 / 16 / 32 grid picker
+│   ├── grid_size_selector.dart # 16 / 32 grid picker
 │   ├── color_palette.dart      # Selectable color swatches
 │   ├── editing_toolbar.dart    # Draw, Eraser, Clear controls
 │   ├── pixel_counter_card.dart # Live filled/total display
@@ -374,7 +373,7 @@ test/
 
 - [x] Export to PNG (gallery save)
 - [x] Export to SVG (Downloads save on Android)
-- [x] Custom grid sizes (8×8, 16×16, 32×32)
+- [x] Custom grid sizes (16×16, 32×32)
 - [x] Live pixel counter
 - [ ] Undo / Redo stack
 - [ ] Save / load motif files

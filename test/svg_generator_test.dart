@@ -63,7 +63,7 @@ void main() {
       expect(rects(root), isEmpty);
     });
 
-    test('exports correct viewport for 8x8, 16x16, and 32x32 grids', () {
+    test('exports correct viewport for 16x16 and 32x32 grids', () {
       for (final gridSize in GridConstants.supportedGridSizes) {
         final svg = SvgGenerator.generateFromCanvas(
           CanvasState.initial(gridRows: gridSize, gridColumns: gridSize),

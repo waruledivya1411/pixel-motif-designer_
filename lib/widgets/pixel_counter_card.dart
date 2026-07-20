@@ -24,6 +24,8 @@ class PixelCounterCard extends StatelessWidget {
     final theme = Theme.of(context);
     final progress = counts.total == 0 ? 0.0 : counts.filled / counts.total;
     final percent = (progress * 100).round();
+    final textColor = theme.colorScheme.onSurface;
+    final secondaryTextColor = theme.colorScheme.onSurfaceVariant;
 
     return Semantics(
       label: 'Canvas usage ${counts.filled} of ${counts.total} pixels',
@@ -56,7 +58,7 @@ class PixelCounterCard extends StatelessWidget {
                   child: Text(
                     'Canvas Usage',
                     style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.onPrimaryContainer,
+                      color: textColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -64,7 +66,7 @@ class PixelCounterCard extends StatelessWidget {
                 Text(
                   '${counts.filled} / ${counts.total}',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer,
+                    color: textColor,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -85,7 +87,7 @@ class PixelCounterCard extends StatelessWidget {
             Text(
               '$percent% filled',
               style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: secondaryTextColor,
               ),
             ),
           ],
