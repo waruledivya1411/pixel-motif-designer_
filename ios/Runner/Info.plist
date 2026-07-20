@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save exported pixel motif images to your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Save exported pixel motif images to your photo library.</string>
 </dict>
 </plist>

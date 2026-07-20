@@ -7,5 +7,6 @@ library;
 
 export 'color_palette.dart';
 export 'editing_toolbar.dart';
+export 'export_section.dart';
 export 'pixel_cell.dart';
 export 'pixel_grid.dart';

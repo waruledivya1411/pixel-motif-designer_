@@ -4,4 +4,5 @@
 /// so providers and widgets remain free of low-level implementation details.
 library;
 
-// Services (export, storage, permissions) will be added later.
+export 'export_result.dart';
+export 'export_service.dart';

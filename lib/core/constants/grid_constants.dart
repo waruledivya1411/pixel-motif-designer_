@@ -17,4 +17,7 @@ abstract final class GridConstants {
 
   /// Maximum allowed cell size when zooming in.
   static const double maxCellSize = 48.0;
+
+  /// Logical pixel size of each cell in exported PNG images.
+  static const int exportCellPixelSize = 16;
 }
