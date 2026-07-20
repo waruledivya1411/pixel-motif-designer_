@@ -8,6 +8,7 @@ library;
 export 'app_drawer.dart';
 export 'appearance_sheet.dart';
 export 'color_palette.dart';
+export 'custom_color_picker_sheet.dart';
 export 'editing_toolbar.dart';
 export 'export_section.dart';
 export 'grid_size_selector.dart';

@@ -9,8 +9,8 @@ import 'grid_size_selector.dart';
 
 /// Navigation drawer for canvas-level settings.
 ///
-/// Mirrors the main screen's card-based Material 3 styling so the drawer
-/// feels like part of the same product surface, not a default system menu.
+/// Uses the brand blue palette via [ThemeData] so drawer content matches
+/// the app bar, buttons, and templates gallery.
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
@@ -19,7 +19,7 @@ class AppDrawer extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Drawer(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.colorScheme.primaryContainer,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(AppConstants.borderRadius),
@@ -62,8 +62,8 @@ class AppDrawer extends StatelessWidget {
                     child: Text(
                       'Canvas settings',
                       style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -78,7 +78,7 @@ class AppDrawer extends StatelessWidget {
   }
 }
 
-/// Branded drawer header aligned with the app bar and editor panels.
+/// Branded drawer header aligned with the blue app bar.
 class _DrawerHeader extends StatelessWidget {
   const _DrawerHeader({required this.theme});
 
@@ -94,10 +94,10 @@ class _DrawerHeader extends StatelessWidget {
         AppConstants.paddingMedium,
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.55),
+        color: theme.colorScheme.primary,
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.35),
+            color: theme.colorScheme.onPrimary.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -107,8 +107,11 @@ class _DrawerHeader extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+              border: Border.all(
+                color: theme.colorScheme.onPrimary.withValues(alpha: 0.35),
+              ),
             ),
             child: Icon(
               Icons.grid_view_rounded,
@@ -124,14 +127,14 @@ class _DrawerHeader extends StatelessWidget {
                   AppConstants.appName,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
+                    color: theme.colorScheme.onPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Canvas settings',
+                  'Design your pixel motifs',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
                   ),
                 ),
               ],
@@ -149,43 +152,16 @@ class _AppearanceDrawerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final subtitle = context.select<ThemeProvider, String>(
-      (provider) => provider.themeModeLabel,
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-      child: ListTile(
-        leading: Icon(
-          Icons.palette_outlined,
-          color: theme.colorScheme.primary,
-        ),
-        title: Text(
-          'Appearance',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        ),
-        tileColor: theme.colorScheme.surface,
-        onTap: () {
-          Navigator.of(context).pop();
-          showAppearanceSheet(context);
-        },
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingMedium,
-        ),
+    return _DrawerNavTile(
+      icon: Icons.palette_outlined,
+      label: 'Appearance',
+      subtitle: context.select<ThemeProvider, String>(
+        (provider) => provider.themeModeLabel,
       ),
+      onTap: () {
+        Navigator.of(context).pop();
+        showAppearanceSheet(context);
+      },
     );
   }
 }
@@ -195,10 +171,12 @@ class _DrawerNavTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.subtitle,
   });
 
   final IconData icon;
   final String label;
+  final String? subtitle;
   final VoidCallback onTap;
 
   @override
@@ -207,22 +185,47 @@ class _DrawerNavTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-      child: ListTile(
-        leading: Icon(icon, color: theme.colorScheme.primary),
-        title: Text(
-          label,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
+      child: Material(
+        color: theme.colorScheme.surface,
+        elevation: 1,
+        shadowColor: theme.colorScheme.primary.withValues(alpha: 0.15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+          side: BorderSide(
+            color: theme.colorScheme.primary.withValues(alpha: 0.25),
+          ),
         ),
-        tileColor: theme.colorScheme.surface,
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingMedium,
+        child: ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: theme.colorScheme.primary, size: 22),
+          ),
+          title: Text(
+            label,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+          subtitle: subtitle == null
+              ? null
+              : Text(
+                  subtitle!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+          onTap: onTap,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.paddingMedium,
+            vertical: AppConstants.paddingSmall,
+          ),
         ),
       ),
     );

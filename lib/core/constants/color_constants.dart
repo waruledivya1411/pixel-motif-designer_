@@ -24,6 +24,7 @@ abstract final class ColorConstants {
   ];
 
   /// Primary swatches displayed in the drawing color palette.
+  /// A custom color picker swatch is appended after these presets in the UI.
   static const List<Color> drawingPalette = [
     Color(0xFF000000), // Black
     Color(0xFFE53935), // Red

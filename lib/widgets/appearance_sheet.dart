@@ -113,10 +113,10 @@ class _AppearanceOptionTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-      child: Material(
+        child: Material(
         color: isSelected
-            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.55)
-            : theme.colorScheme.surface,
+            ? theme.colorScheme.primaryContainer
+            : theme.colorScheme.surfaceContainerHighest,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           side: BorderSide(

@@ -15,7 +15,7 @@ abstract final class AppTheme {
           primary: AppColors.primary,
           onPrimary: AppColors.onPrimary,
           primaryContainer: AppColors.primaryContainer,
-          onPrimaryContainer: AppColors.onSurface,
+          onPrimaryContainer: AppColors.onPrimaryContainer,
           secondary: AppColors.primary,
           onSecondary: AppColors.onPrimary,
           surface: AppColors.surface,
@@ -36,7 +36,7 @@ abstract final class AppTheme {
           primary: AppColors.darkPrimary,
           onPrimary: AppColors.darkOnPrimary,
           primaryContainer: AppColors.darkPrimaryContainer,
-          onPrimaryContainer: AppColors.darkOnSurface,
+          onPrimaryContainer: AppColors.darkOnPrimaryContainer,
           secondary: AppColors.darkPrimary,
           onSecondary: AppColors.darkOnPrimary,
           surface: AppColors.darkSurface,
@@ -74,20 +74,21 @@ abstract final class AppTheme {
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        scrolledUnderElevation: 1,
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        surfaceTintColor: colorScheme.surfaceTint,
+        scrolledUnderElevation: 2,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        surfaceTintColor: Colors.transparent,
         titleTextStyle: TextStyle(
-          color: colorScheme.onSurface,
+          color: colorScheme.onPrimary,
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
-        iconTheme: IconThemeData(color: colorScheme.onSurface),
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
+        actionsIconTheme: IconThemeData(color: colorScheme.onPrimary),
       ),
       drawerTheme: DrawerThemeData(
-        backgroundColor: colorScheme.surface,
-        surfaceTintColor: colorScheme.surfaceTint,
+        backgroundColor: colorScheme.primaryContainer,
+        surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topRight: Radius.circular(AppConstants.borderRadius),
@@ -150,6 +151,10 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.38),
+          disabledForegroundColor: colorScheme.onPrimary.withValues(alpha: 0.62),
           minimumSize: const Size(0, AppConstants.minTouchTarget),
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.paddingMedium,
@@ -159,12 +164,23 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.primary,
+          side: BorderSide(color: colorScheme.primary),
           minimumSize: const Size(0, AppConstants.minTouchTarget),
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.paddingMedium,
           ),
           shape: buttonShape,
         ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: colorScheme.primary,
+          minimumSize: const Size(0, AppConstants.minTouchTarget),
+        ),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: colorScheme.primary,
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(

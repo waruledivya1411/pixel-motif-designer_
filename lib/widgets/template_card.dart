@@ -22,29 +22,47 @@ class TemplateCard extends StatelessWidget {
     return Semantics(
       button: true,
       label: '${template.name} template',
-      child: Card(
-        elevation: 0,
-        clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: theme.colorScheme.surface,
+        elevation: 1,
+        shadowColor: theme.colorScheme.primary.withValues(alpha: 0.12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           side: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.35),
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
           ),
         ),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
+          splashColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+          highlightColor: theme.colorScheme.primaryContainer
+              .withValues(alpha: 0.45),
           child: Padding(
             padding: const EdgeInsets.all(AppConstants.paddingMedium),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TemplatePreview(template: template),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer
+                        .withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: TemplatePreview(template: template),
+                  ),
+                ),
                 const SizedBox(height: AppConstants.paddingSmall),
                 Text(
                   '${template.emoji} ${template.name}',
                   style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.onPrimaryContainer,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -52,7 +70,8 @@ class TemplateCard extends StatelessWidget {
                 Text(
                   '${template.designGridSize}×${template.designGridSize} design',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
