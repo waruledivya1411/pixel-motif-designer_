@@ -15,27 +15,27 @@ class EditingToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.paddingMedium,
-        vertical: AppConstants.paddingSmall,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const _ToolButton(
+    return Semantics(
+      label: 'Editing tools',
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: AppConstants.paddingSmall,
+        runSpacing: AppConstants.paddingSmall,
+        children: const [
+          _ToolButton(
             tool: DrawingTool.draw,
             icon: Icons.brush_rounded,
             label: 'Draw',
+            tooltip: 'Draw with the active color',
           ),
-          const SizedBox(width: AppConstants.paddingSmall),
-          const _ToolButton(
+          _ToolButton(
             tool: DrawingTool.erase,
             icon: Icons.auto_fix_off_rounded,
             label: 'Eraser',
+            tooltip: 'Erase pixels to transparent',
           ),
-          const SizedBox(width: AppConstants.paddingMedium),
-          const _ClearCanvasButton(),
+          _ClearCanvasButton(),
         ],
       ),
     );
@@ -51,11 +51,13 @@ class _ToolButton extends StatelessWidget {
     required this.tool,
     required this.icon,
     required this.label,
+    required this.tooltip,
   });
 
   final DrawingTool tool;
   final IconData icon;
   final String label;
+  final String tooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -65,56 +67,79 @@ class _ToolButton extends StatelessWidget {
 
     final theme = Theme.of(context);
 
-    return Semantics(
-      label: label,
-      selected: isSelected,
-      button: true,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primaryContainer
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : theme.colorScheme.outline,
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        label: label,
+        selected: isSelected,
+        button: true,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppConstants.minTouchTarget,
           ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          onTap: isSelected
-              ? null
-              : () => context.read<CanvasProvider>().changeDrawingTool(tool),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.paddingMedium,
-              vertical: AppConstants.paddingSmall,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? theme.colorScheme.primaryContainer
+                  : theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+              border: Border.all(
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outline,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: theme.colorScheme.primary
+                            .withValues(alpha: 0.12),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: isSelected
-                      ? theme.colorScheme.onPrimaryContainer
-                      : theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: AppConstants.paddingSmall),
-                Text(
-                  label,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: isSelected
-                        ? theme.colorScheme.onPrimaryContainer
-                        : theme.colorScheme.onSurfaceVariant,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.w500,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius:
+                    BorderRadius.circular(AppConstants.borderRadius),
+                onTap: isSelected
+                    ? null
+                    : () =>
+                        context.read<CanvasProvider>().changeDrawingTool(tool),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.paddingMedium,
+                    vertical: AppConstants.paddingSmall,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 20,
+                        color: isSelected
+                            ? theme.colorScheme.onPrimaryContainer
+                            : theme.colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppConstants.paddingSmall),
+                      Text(
+                        label,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: isSelected
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.onSurfaceVariant,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -134,25 +159,30 @@ class _ClearCanvasButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Semantics(
-      label: 'Clear canvas',
-      button: true,
-      child: OutlinedButton.icon(
-        onPressed: () => context.read<CanvasProvider>().clearCanvas(),
-        icon: Icon(
-          Icons.delete_sweep_rounded,
-          size: 20,
-          color: theme.colorScheme.error,
-        ),
-        label: Text(
-          'Clear',
-          style: TextStyle(color: theme.colorScheme.error),
-        ),
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.5)),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppConstants.paddingMedium,
-            vertical: AppConstants.paddingSmall,
+    return Tooltip(
+      message: 'Remove all pixels from the canvas',
+      child: Semantics(
+        label: 'Clear canvas',
+        button: true,
+        child: OutlinedButton.icon(
+          onPressed: () => context.read<CanvasProvider>().clearCanvas(),
+          icon: Icon(
+            Icons.delete_sweep_rounded,
+            size: 20,
+            color: theme.colorScheme.error,
+          ),
+          label: Text(
+            'Clear',
+            style: TextStyle(color: theme.colorScheme.error),
+          ),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, AppConstants.minTouchTarget),
+            side: BorderSide(
+              color: theme.colorScheme.error.withValues(alpha: 0.5),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.paddingMedium,
+            ),
           ),
         ),
       ),

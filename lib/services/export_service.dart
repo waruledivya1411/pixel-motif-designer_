@@ -11,6 +11,7 @@ import '../core/constants/color_constants.dart';
 import '../core/constants/grid_constants.dart';
 import '../models/canvas_state.dart';
 import 'export_result.dart';
+import 'platform_download_saver.dart';
 import 'svg_generator.dart';
 
 /// Handles PNG generation and platform-specific saving for motif exports.
@@ -24,13 +25,16 @@ class ExportService {
     Future<Uint8List> Function(CanvasState state)? pngEncoder,
     Future<void> Function(Uint8List bytes, String fileName)? gallerySaver,
     Future<void> Function(Uint8List bytes, String fileName)? fileSaver,
+    Future<String?> Function(String content, String fileName)? svgSaver,
   })  : _pngEncoder = pngEncoder ?? _encodeCanvasAsPng,
         _gallerySaver = gallerySaver ?? _saveToGallery,
-        _fileSaver = fileSaver ?? _saveToDownloadsOrDocuments;
+        _fileSaver = fileSaver ?? _saveToDownloadsOrDocuments,
+        _svgSaver = svgSaver ?? _saveSvgToUserAccessibleLocation;
 
   final Future<Uint8List> Function(CanvasState state) _pngEncoder;
   final Future<void> Function(Uint8List bytes, String fileName) _gallerySaver;
   final Future<void> Function(Uint8List bytes, String fileName) _fileSaver;
+  final Future<String?> Function(String content, String fileName) _svgSaver;
 
   /// Generates a PNG from [state] and saves it to the gallery or filesystem.
   Future<ExportResult> exportMotifAsPng(CanvasState state) async {
@@ -52,13 +56,18 @@ class ExportService {
 
   /// Generates an SVG from [state] and saves it to Downloads/Documents.
   ///
-  /// On mobile, opens the system share sheet so the user can save to
-  /// Downloads or Files (SVG is not a gallery image like PNG).
+  /// On Android, writes directly to the public Downloads folder. On iOS,
+  /// falls back to the system share sheet because SVG is not a gallery asset.
   Future<ExportResult> exportMotifAsSvg(CanvasState state) async {
     try {
       final svgContent = SvgGenerator.generateFromCanvas(state);
       final fileName = _buildFileName('svg');
-      await _saveSvgToUserAccessibleLocation(svgContent, fileName);
+      final savedFileName = await _svgSaver(svgContent, fileName);
+
+      if (savedFileName == null) {
+        return ExportResult.failure;
+      }
+
       return ExportResult.success;
     } catch (_) {
       return ExportResult.failure;
@@ -95,37 +104,46 @@ class ExportService {
   }
 
   /// Saves SVG to a user-accessible location for the current platform.
-  static Future<void> _saveSvgToUserAccessibleLocation(
+  static Future<String?> _saveSvgToUserAccessibleLocation(
     String content,
     String fileName,
   ) async {
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (Platform.isAndroid) {
+      final saved = await PlatformDownloadSaver.saveText(
+        content: content,
+        fileName: fileName,
+      );
+      if (saved != null) return saved;
+      return null;
+    }
+
+    if (Platform.isIOS) {
       await _shareSvgOnMobile(content, fileName);
-      return;
+      return fileName;
     }
 
     await _saveTextToDownloadsOrDocuments(content, fileName);
+    return fileName;
   }
 
-  /// Writes SVG to a temp file and opens the system share sheet on mobile.
-  ///
-  /// Users can tap "Save to Files" or a file manager to store in Downloads.
-  /// This avoids scoped-storage issues that hide files in app-private folders.
+  /// Writes SVG to a temp file and opens the system share sheet on iOS.
   static Future<void> _shareSvgOnMobile(String content, String fileName) async {
     final tempDir = await getTemporaryDirectory();
     final file = File('${tempDir.path}/$fileName');
     await file.writeAsString(content, flush: true);
 
-    await Share.shareXFiles(
-      [
-        XFile(
-          file.path,
-          mimeType: 'image/svg+xml',
-          name: fileName,
-        ),
-      ],
-      subject: 'Pixel Motif Designer SVG',
-      text: 'Save this SVG to your Downloads or Files folder.',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [
+          XFile(
+            file.path,
+            mimeType: 'image/svg+xml',
+            name: fileName,
+          ),
+        ],
+        subject: 'Pixel Motif Designer SVG',
+        text: 'Save this SVG to your Files app.',
+      ),
     );
   }
 

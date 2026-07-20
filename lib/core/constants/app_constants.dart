@@ -17,4 +17,13 @@ abstract final class AppConstants {
 
   /// Corner radius applied to cards and panels.
   static const double borderRadius = 12.0;
+
+  /// Vertical gap between major editor sections.
+  static const double sectionSpacing = 12.0;
+
+  /// Maximum content width on large screens for readable layout.
+  static const double maxContentWidth = 440.0;
+
+  /// Minimum recommended touch target (Material accessibility).
+  static const double minTouchTarget = 48.0;
 }

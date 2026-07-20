@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/constants/app_constants.dart';
+import '../core/constants/color_constants.dart';
 import '../core/constants/grid_constants.dart';
 import '../providers/canvas_provider.dart';
 import 'pixel_cell.dart';
@@ -13,12 +15,16 @@ import 'pixel_cell.dart';
 /// instead of the entire grid.
 class PixelGrid extends StatelessWidget {
   const PixelGrid({
-    super.key,
     this.cellSize = GridConstants.defaultCellSize,
+    this.maxWidth,
+    super.key,
   });
 
-  /// Fixed edge length for every cell in the grid.
+  /// Preferred edge length for every cell when space allows.
   final double cellSize;
+
+  /// Maximum width available for the grid; used to scale cells on narrow screens.
+  final double? maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -31,18 +37,50 @@ class PixelGrid extends StatelessWidget {
       shouldRebuild: (previous, next) =>
           previous.rows != next.rows || previous.columns != next.columns,
       builder: (context, dimensions, _) {
-        return _PixelGridGestureLayer(
-          rows: dimensions.rows,
+        final resolvedCellSize = _resolveCellSize(
+          maxWidth: maxWidth,
           columns: dimensions.columns,
-          cellSize: cellSize,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(
-              dimensions.rows,
-              (row) => _PixelGridRow(
-                row: row,
-                columnCount: dimensions.columns,
-                cellSize: cellSize,
+          preferred: cellSize,
+        );
+
+        return Semantics(
+          label: 'Pixel canvas, ${dimensions.rows} by ${dimensions.columns}',
+          child: Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(AppConstants.borderRadius),
+                border: Border.all(color: ColorConstants.gridLine),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .shadow
+                        .withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(AppConstants.borderRadius - 1),
+                child: _PixelGridGestureLayer(
+                  rows: dimensions.rows,
+                  columns: dimensions.columns,
+                  cellSize: resolvedCellSize,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(
+                      dimensions.rows,
+                      (row) => _PixelGridRow(
+                        row: row,
+                        columnCount: dimensions.columns,
+                        cellSize: resolvedCellSize,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -50,6 +88,23 @@ class PixelGrid extends StatelessWidget {
       },
     );
   }
+}
+
+/// Scales cell size down on narrow screens while preserving drawing coordinates.
+double _resolveCellSize({
+  required double? maxWidth,
+  required int columns,
+  required double preferred,
+}) {
+  if (maxWidth == null || maxWidth.isInfinite || maxWidth <= 0) {
+    return preferred;
+  }
+
+  final fitted = maxWidth / columns;
+  return fitted.clamp(
+    GridConstants.minCellSize,
+    preferred,
+  );
 }
 
 /// Captures pointer events for tap and drag drawing across the entire grid.

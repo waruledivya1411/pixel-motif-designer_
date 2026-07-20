@@ -19,86 +19,136 @@ class ExportSection extends StatelessWidget {
       (provider) => provider.isExporting,
     );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.paddingMedium,
-        vertical: AppConstants.paddingSmall,
-      ),
-      child: Row(
+    return Semantics(
+      label: 'Export motif',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: FilledButton.icon(
-              onPressed:
-                  isExporting ? null : () => _handlePngExport(context),
-              icon: _buildIcon(context, isExporting, Icons.image_outlined),
-              label: Text(isExporting ? 'Exporting…' : 'Export PNG'),
-            ),
+          Text(
+            'Save your motif',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(width: AppConstants.paddingSmall),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed:
-                  isExporting ? null : () => _handleSvgExport(context),
-              icon: _buildIcon(context, isExporting, Icons.code_rounded),
-              label: const Text('Export SVG'),
-            ),
+          const SizedBox(height: AppConstants.paddingSmall),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final useColumn = constraints.maxWidth < 280;
+
+              if (useColumn) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _PngExportButton(isExporting: isExporting),
+                    const SizedBox(height: AppConstants.paddingSmall),
+                    _SvgExportButton(isExporting: isExporting),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: _PngExportButton(isExporting: isExporting)),
+                  const SizedBox(width: AppConstants.paddingSmall),
+                  Expanded(child: _SvgExportButton(isExporting: isExporting)),
+                ],
+              );
+            },
           ),
         ],
       ),
     );
   }
+}
 
-  /// Shows a spinner while export is running, otherwise the given [icon].
-  Widget _buildIcon(BuildContext context, bool isExporting, IconData icon) {
-    if (!isExporting) return Icon(icon);
+class _PngExportButton extends StatelessWidget {
+  const _PngExportButton({required this.isExporting});
 
-    return SizedBox(
-      width: 20,
-      height: 20,
-      child: CircularProgressIndicator(
-        strokeWidth: 2,
-        color: Theme.of(context).colorScheme.primary,
+  final bool isExporting;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Save motif as PNG to gallery',
+      child: FilledButton.icon(
+        onPressed: isExporting ? null : () => _handlePngExport(context),
+        icon: _buildIcon(context, isExporting, Icons.image_outlined),
+        label: Text(isExporting ? 'Exporting…' : 'Export PNG'),
       ),
     );
   }
+}
 
-  Future<void> _handlePngExport(BuildContext context) async {
-    final canvasState = context.read<CanvasProvider>().state;
-    final result = await context.read<MotifProvider>().exportPng(canvasState);
-    if (!context.mounted) return;
-    _showSnackBar(
-      context,
-      successMessage: '✅ PNG exported successfully',
-      failureMessage: '❌ Export failed',
-      result: result,
+class _SvgExportButton extends StatelessWidget {
+  const _SvgExportButton({required this.isExporting});
+
+  final bool isExporting;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Save motif as SVG to Downloads',
+      child: OutlinedButton.icon(
+        onPressed: isExporting ? null : () => _handleSvgExport(context),
+        icon: _buildIcon(context, isExporting, Icons.code_rounded),
+        label: const Text('Export SVG'),
+      ),
     );
   }
+}
 
-  Future<void> _handleSvgExport(BuildContext context) async {
-    final canvasState = context.read<CanvasProvider>().state;
-    final result = await context.read<MotifProvider>().exportSvg(canvasState);
-    if (!context.mounted) return;
-    _showSnackBar(
-      context,
-      successMessage: '✅ SVG ready — save via the share menu',
-      failureMessage: '❌ SVG export failed',
-      result: result,
-    );
-  }
+/// Shows a spinner while export is running, otherwise the given [icon].
+Widget _buildIcon(BuildContext context, bool isExporting, IconData icon) {
+  if (!isExporting) return Icon(icon);
 
-  void _showSnackBar(
-    BuildContext context, {
-    required String successMessage,
-    required String failureMessage,
-    required ExportResult result,
-  }) {
-    final message = switch (result) {
-      ExportResult.success => successMessage,
-      ExportResult.failure => failureMessage,
-    };
+  return SizedBox(
+    width: 20,
+    height: 20,
+    child: CircularProgressIndicator(
+      strokeWidth: 2,
+      color: Theme.of(context).colorScheme.primary,
+    ),
+  );
+}
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
+Future<void> _handlePngExport(BuildContext context) async {
+  final canvasState = context.read<CanvasProvider>().state;
+  final result = await context.read<MotifProvider>().exportPng(canvasState);
+  if (!context.mounted) return;
+  _showSnackBar(
+    context,
+    successMessage: '✅ PNG exported successfully',
+    failureMessage: '❌ Export failed',
+    result: result,
+  );
+}
+
+Future<void> _handleSvgExport(BuildContext context) async {
+  final canvasState = context.read<CanvasProvider>().state;
+  final result = await context.read<MotifProvider>().exportSvg(canvasState);
+  if (!context.mounted) return;
+  _showSnackBar(
+    context,
+    successMessage: '✅ SVG saved to Downloads/Pixel Motif Designer',
+    failureMessage: '❌ SVG export failed',
+    result: result,
+  );
+}
+
+void _showSnackBar(
+  BuildContext context, {
+  required String successMessage,
+  required String failureMessage,
+  required ExportResult result,
+}) {
+  final message = switch (result) {
+    ExportResult.success => successMessage,
+    ExportResult.failure => failureMessage,
+  };
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
 }
