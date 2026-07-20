@@ -84,6 +84,19 @@ class CanvasProvider extends ChangeNotifier {
     );
   }
 
+  /// Applies the currently selected [selectedTool] to the cell at [row], [column].
+  ///
+  /// Single entry point for tap (and future drag) gestures — widgets forward
+  /// coordinates only; tool selection and pixel mutation stay in this provider.
+  void handlePixelTap(int row, int column) {
+    switch (_state.selectedTool) {
+      case DrawingTool.draw:
+        drawPixel(row, column);
+      case DrawingTool.erase:
+        erasePixel(row, column);
+    }
+  }
+
   /// Resets every cell to empty while preserving grid size, color, and tool.
   ///
   /// Skips notification when the canvas is already blank.

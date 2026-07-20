@@ -83,6 +83,8 @@ class _PixelGridRow extends StatelessWidget {
 ///
 /// [RepaintBoundary] isolates each cell's paint pass so neighbouring cells
 /// are not repainted during rapid drag drawing in a later phase.
+/// [GestureDetector] captures taps and delegates to [CanvasProvider.handlePixelTap]
+/// without subscribing to the full provider — preserving fine-grained rebuilds.
 class _PixelCellAt extends StatelessWidget {
   const _PixelCellAt({
     required this.row,
@@ -102,9 +104,13 @@ class _PixelCellAt extends StatelessWidget {
     );
 
     return RepaintBoundary(
-      child: PixelCell(
-        color: color,
-        size: cellSize,
+      child: GestureDetector(
+        // Forwards tap coordinates to the provider — no pixel logic in the widget.
+        onTap: () => context.read<CanvasProvider>().handlePixelTap(row, column),
+        child: PixelCell(
+          color: color,
+          size: cellSize,
+        ),
       ),
     );
   }
