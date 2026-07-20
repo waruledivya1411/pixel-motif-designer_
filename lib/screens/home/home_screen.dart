@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../widgets/app_drawer.dart';
 import '../../widgets/color_palette.dart';
 import '../../widgets/editing_toolbar.dart';
 import '../../widgets/editor_panel.dart';
 import '../../widgets/export_section.dart';
-import '../../widgets/grid_size_selector.dart';
 import '../../widgets/pixel_counter_card.dart';
 import '../../widgets/pixel_grid.dart';
 
@@ -22,33 +22,7 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(AppConstants.appName),
       ),
-      drawer: Drawer(
-        child: SafeArea(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                margin: EdgeInsets.zero,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                ),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    'Canvas settings',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimaryContainer,
-                        ),
-                  ),
-                ),
-              ),
-              const GridSizeSelector(),
-            ],
-          ),
-        ),
-      ),
+      drawer: const AppDrawer(),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -80,28 +54,32 @@ class HomeScreen extends StatelessWidget {
                         child: EditingToolbar(),
                       ),
                       const SizedBox(height: AppConstants.sectionSpacing),
-                      const EditorPanel(
-                        semanticLabel: 'Pixel counter',
-                        child: PixelCounterCard(),
-                      ),
-                      const SizedBox(height: AppConstants.sectionSpacing),
                       Expanded(
                         child: EditorPanel(
                           semanticLabel: 'Pixel canvas',
-                          child: LayoutBuilder(
-                            builder: (context, gridConstraints) {
-                              return Center(
-                                child: FittedBox(
-                                  fit: BoxFit.contain,
-                                  child: PixelGrid(
-                                    maxWidth: gridMaxWidth.clamp(
-                                      0,
-                                      gridConstraints.maxWidth,
-                                    ),
-                                  ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const PixelCounterCard(),
+                              const SizedBox(height: AppConstants.paddingSmall),
+                              Expanded(
+                                child: LayoutBuilder(
+                                  builder: (context, gridConstraints) {
+                                    return Center(
+                                      child: FittedBox(
+                                        fit: BoxFit.contain,
+                                        child: PixelGrid(
+                                          maxWidth: gridMaxWidth.clamp(
+                                            0,
+                                            gridConstraints.maxWidth,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         ),
                       ),

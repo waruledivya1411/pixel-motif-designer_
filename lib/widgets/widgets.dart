@@ -5,6 +5,7 @@
 /// unless they are intentionally scoped feature widgets.
 library;
 
+export 'app_drawer.dart';
 export 'color_palette.dart';
 export 'editing_toolbar.dart';
 export 'export_section.dart';
