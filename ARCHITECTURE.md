@@ -14,13 +14,16 @@ This document describes how the application is structured, why each layer exists
 6. [Services Layer](#services-layer)
 7. [UI Layer](#ui-layer)
 8. [Theme System](#theme-system)
-9. [Undo / Redo](#undo--redo)
-10. [Drawing Pipeline](#drawing-pipeline)
-11. [Export Pipeline](#export-pipeline)
-12. [Templates](#templates)
-13. [Project Structure](#project-structure)
-14. [Testing Strategy](#testing-strategy)
-15. [Extension Points](#extension-points)
+9. [Theme System](#theme-system)
+10. [App Launch & Splash](#app-launch--splash)
+11. [About Screen](#about-screen)
+12. [Undo / Redo](#undo--redo)
+13. [Drawing Pipeline](#drawing-pipeline)
+14. [Export Pipeline](#export-pipeline)
+15. [Templates](#templates)
+16. [Project Structure](#project-structure)
+17. [Testing Strategy](#testing-strategy)
+18. [Extension Points](#extension-points)
 
 ---
 
@@ -46,14 +49,16 @@ This document describes how the application is structured, why each layer exists
                     │   app.dart       │
                     │ ThemeProvider    │
                     │ MaterialApp      │
+                    │ home: Splash     │
                     └────────┬─────────┘
                              │
          ┌───────────────────┼───────────────────┐
          │                   │                   │
   ┌──────▼──────┐    ┌───────▼───────┐   ┌──────▼──────┐
-  │ HomeScreen  │    │ TemplatesScreen│   │ (future)    │
-  └──────┬──────┘    └───────┬───────┘   └─────────────┘
-         │                   │
+  │ SplashScreen│    │ HomeScreen    │   │ Templates   │
+  │ (launch)    │───►│ (editor)      │   │ Screen      │
+  └─────────────┘    └───────┬───────┘   └─────────────┘
+                             │
   ┌──────▼───────────────────▼──────────────────────────┐
   │ Widgets (presentation + selective Provider reads)   │
   └──────┬──────────────────────────────────────────────┘
@@ -193,6 +198,7 @@ Services are **stateless** (or static). They receive data from providers and ret
 
 ### Screens
 
+- `SplashScreen` — Branded launch animation; navigates to home after ~2.4s.
 - `HomeScreen` — Editor layout (palette, toolbar, grid, export).
 - `TemplatesScreen` — Template gallery grid.
 
@@ -200,11 +206,13 @@ Services are **stateless** (or static). They receive data from providers and ret
 
 | Widget | Pattern |
 |--------|---------|
+| `SplashScreen` | Theme-aware gradient, logo asset, fade to home |
 | `PixelGrid` | `Selector` for dimensions; grid `Listener` for pointer |
 | `_PixelCellAt` | `context.select` on single cell color |
 | `ColorPalette` | Single `Row`; preset + custom swatch |
 | `EditingToolbar` | Tool + undo/redo with selective `select` |
 | `AppDrawer` | Navigation; brightness-aware styling |
+| `AboutSheet` | App identity from `AppConstants`; drawer entry |
 | `EditorPanel` | Shared Material 3 card wrapper |
 
 **Rule:** Widgets call `context.read<CanvasProvider>()` for actions; `context.select` for display state.
@@ -242,6 +250,58 @@ main() → ThemePreferences.loadThemeMode()
        → User picks mode in AppearanceSheet
        → ThemePreferences.saveThemeMode()
 ```
+
+---
+
+## App Launch & Splash
+
+### Bootstrap flow
+
+```
+OS native splash (flutter_native_splash)
+  → main() loads ThemePreferences
+  → PixelMotifApp → MaterialApp(home: SplashScreen)
+  → SplashScreen animation (~2.4s)
+  → pushReplacement → HomeScreen
+```
+
+### Native layer
+
+`flutter_native_splash` generates Android/iOS launch assets from `assets/icon/app_icon.png`:
+
+| Setting | Light | Dark |
+|---------|-------|------|
+| Background | `#E1E8F2` | `#0F1218` |
+| Logo | Centered app icon | Same |
+
+Regenerate: `dart run flutter_native_splash:create`
+
+### Flutter layer
+
+`SplashScreen` (`lib/screens/splash/splash_screen.dart`):
+
+- Reads active `ThemeData` for gradient and accent colors.
+- Animates logo scale, text fade, and pixel grid background.
+- Uses `Image.asset('assets/icon/app_icon.png')` — asset declared in `pubspec.yaml`.
+- Tests pass `displayDuration: Duration.zero` or pump through the wait in `widget_test.dart`.
+
+---
+
+## About Screen
+
+Drawer → **About** calls `showAboutSheet()`.
+
+Content is sourced from `AppConstants` (single source of truth):
+
+| Constant | Purpose |
+|----------|---------|
+| `appName` / `appVersion` | Header |
+| `appDescription` | Summary paragraph |
+| `appFeatures` | Bullet list of capabilities |
+| `appAuthor` | Credit line |
+| `repositoryUrl` | Public GitHub link |
+
+No provider involvement — presentation-only bottom sheet.
 
 ---
 
@@ -329,12 +389,13 @@ lib/
 ├── models/             # Pixel, CanvasState, templates
 ├── providers/          # All ChangeNotifiers
 ├── screens/home/
+├── screens/splash/     # Branded launch animation
 ├── screens/templates/
 ├── services/           # I/O and generators
-├── widgets/            # Reusable UI
+├── widgets/            # Reusable UI (drawer, about, palette, grid)
 └── exports/
 
-assets/icon/app_icon.png   # Launcher icon source
+assets/icon/app_icon.png   # Launcher icon + splash logo source
 
 test/                        # Unit & widget tests
 docs/DEVELOPER_GUIDE.md      # API & flow reference
@@ -345,7 +406,7 @@ docs/DEVELOPER_GUIDE.md      # API & flow reference
 ## Testing Strategy
 
 - **Unit tests** for providers, services, SVG math (no widget tree).
-- **Widget smoke test** for app launch with mock SharedPreferences.
+- **Widget smoke test** for app launch (splash → home) with mock SharedPreferences.
 - Undo tests verify stroke batching, redo clearing, and 30-step cap.
 
 Run: `flutter test` · `flutter analyze`

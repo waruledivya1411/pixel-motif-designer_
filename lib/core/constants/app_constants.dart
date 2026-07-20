@@ -6,6 +6,31 @@ abstract final class AppConstants {
   /// Display name shown in the app bar and system UI.
   static const String appName = 'Pixel Motif Designer';
 
+  /// Semantic version shown in About.
+  static const String appVersion = '1.0.0';
+
+  /// Application author.
+  static const String appAuthor = 'Divya Warule';
+
+  /// Short description for About and store listings.
+  static const String appDescription =
+      'A production-quality pixel art studio for creating, editing, and exporting motif designs on your phone.';
+
+  /// Public source repository.
+  static const String repositoryUrl =
+      'github.com/waruledivya1411/pixel-motif-designer_';
+
+  /// Highlighted capabilities shown in the About sheet.
+  static const List<String> appFeatures = [
+    'Draw & drag paint on 16×16 or 32×32 grids',
+    'Eraser, clear canvas, undo & redo (30 steps)',
+    'Custom HSV color picker + preset palette',
+    'Built-in pixel templates gallery',
+    'Export PNG to gallery & SVG to Downloads',
+    'Light, dark, and system appearance modes',
+    'Live canvas usage counter',
+  ];
+
   /// Standard horizontal padding for screen content.
   static const double paddingSmall = 8.0;
 

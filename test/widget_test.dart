@@ -10,7 +10,12 @@ void main() {
   });
 
   testWidgets('HomeScreen renders app title', (WidgetTester tester) async {
-    await tester.pumpWidget(const PixelMotifApp());
+    await tester.pumpWidget(
+      const PixelMotifApp(),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
 
     expect(find.text(AppConstants.appName), findsOneWidget);
   });

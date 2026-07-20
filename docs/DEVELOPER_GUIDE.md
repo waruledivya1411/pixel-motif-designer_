@@ -71,6 +71,19 @@ Use this to verify all requested capabilities are present in the codebase.
 | Default = system on first launch | ✅ | `loadThemeMode()` returns system if unset |
 | No AppBar theme toggle | ✅ | Theme only in drawer |
 
+### About & Launch
+
+| Requirement | Implemented | Location |
+|-------------|-------------|----------|
+| About drawer item | ✅ | `AppDrawer` → `showAboutSheet()` |
+| App version & author | ✅ | `AppConstants.appVersion`, `appAuthor` |
+| Feature list in About | ✅ | `AppConstants.appFeatures` |
+| Repository link | ✅ | `AppConstants.repositoryUrl` |
+| Native splash (OS) | ✅ | `flutter_native_splash` + Android/iOS assets |
+| Animated splash screen | ✅ | `SplashScreen` → fade to `HomeScreen` |
+| Theme-aware splash colors | ✅ | Light `#E1E8F2`, dark `#0F1218` |
+| Logo on splash | ✅ | `assets/icon/app_icon.png` |
+
 ### Branding & UI
 
 | Requirement | Implemented | Location |
@@ -79,7 +92,8 @@ Use this to verify all requested capabilities are present in the codebase.
 | Blue light theme | ✅ | `AppColors.primary` |
 | Comfortable dark theme | ✅ | Slate surfaces in `app_colors.dart` |
 | App launcher icon | ✅ | `flutter_launcher_icons` + `assets/icon/app_icon.png` |
-| Drawer: Home, Templates, Appearance | ✅ | `AppDrawer` |
+| Branded splash screen | ✅ | `SplashScreen` + `flutter_native_splash` |
+| Drawer: Home, Templates, Appearance, About | ✅ | `AppDrawer` |
 | Card contrast (panels vs background) | ✅ | `AppColors.background` vs `surface` |
 
 ---
@@ -149,7 +163,28 @@ Future<ExportResult> exportSvg(CanvasState state)
 
 1. Replace `assets/icon/app_icon.png` (1024×1024 recommended, safe margin).
 2. Run `dart run flutter_launcher_icons`.
-3. Reinstall app on device.
+3. Run `dart run flutter_native_splash:create` (splash uses the same logo).
+4. Reinstall app on device.
+
+### Regenerate splash only
+
+After editing `flutter_native_splash` colors or logo in `pubspec.yaml`:
+
+```bash
+dart run flutter_native_splash:create
+```
+
+Splash animation timing lives in `SplashScreen.displayDuration` (default 2400 ms).
+
+### Update About content
+
+Edit `AppConstants` in `lib/core/constants/app_constants.dart`:
+
+- `appVersion`, `appAuthor`, `appDescription`
+- `appFeatures` list
+- `repositoryUrl`
+
+No provider changes needed — `AboutSheet` reads constants directly.
 
 ### Add a template
 
@@ -197,4 +232,6 @@ flutter analyze
 | Themes | `theme_provider.dart`, `theme_preferences.dart`, `app_theme.dart` |
 | Templates | `template_service.dart`, `templates_screen.dart` |
 | Export | `export_service.dart`, `svg_generator.dart` |
+| About | `about_sheet.dart`, `app_constants.dart` |
+| Splash | `splash_screen.dart`, `pubspec.yaml` → `flutter_native_splash` |
 | Icons | `pubspec.yaml` → `flutter_launcher_icons`, `assets/icon/` |

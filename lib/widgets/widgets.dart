@@ -6,6 +6,7 @@
 library;
 
 export 'app_drawer.dart';
+export 'about_sheet.dart';
 export 'appearance_sheet.dart';
 export 'color_palette.dart';
 export 'custom_color_picker_sheet.dart';

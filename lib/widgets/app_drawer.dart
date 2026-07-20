@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../core/constants/app_constants.dart';
 import '../providers/theme_provider.dart';
 import '../screens/templates/templates_screen.dart';
+import 'about_sheet.dart';
 import 'appearance_sheet.dart';
 import 'grid_size_selector.dart';
 
@@ -53,6 +54,14 @@ class AppDrawer extends StatelessWidget {
                     },
                   ),
                   const _AppearanceDrawerTile(),
+                  _DrawerNavTile(
+                    icon: Icons.info_outline_rounded,
+                    label: 'About',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      showAboutSheet(context);
+                    },
+                  ),
                   const SizedBox(height: AppConstants.paddingMedium),
                   Padding(
                     padding: const EdgeInsets.only(
