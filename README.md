@@ -1,6 +1,6 @@
-# pixel_motif_designer
+# Pixel Motif Designer
 
-A new Flutter project.
+A production-quality Flutter application for designing pixel motifs with clean architecture, Provider state management, and scalable folder structure.
 
 ## Getting Started
 
@@ -15,3 +15,10 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Run the App
+
+```bash
+flutter pub get
+flutter run
+```
