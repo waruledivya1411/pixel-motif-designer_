@@ -86,9 +86,45 @@ class CanvasProvider extends ChangeNotifier {
 
   /// Applies the currently selected [selectedTool] to the cell at [row], [column].
   ///
-  /// Single entry point for tap (and future drag) gestures — widgets forward
-  /// coordinates only; tool selection and pixel mutation stay in this provider.
+  /// Single entry point for tap gestures — widgets forward coordinates only;
+  /// tool selection and pixel mutation stay in this provider.
   void handlePixelTap(int row, int column) {
+    _applyToolAt(row, column);
+  }
+
+  /// Last cell processed during the current drag stroke.
+  ///
+  /// Tracked separately from [CanvasState] because it is transient input state,
+  /// not motif data — resetting it avoids redundant work when the finger
+  /// hovers over the same pixel across multiple pointer-move events.
+  int? _strokeRow;
+  int? _strokeColumn;
+
+  /// Marks the start of a pointer down / drag stroke.
+  void beginStroke() {
+    _strokeRow = null;
+    _strokeColumn = null;
+  }
+
+  /// Marks the end of a pointer stroke and clears transient drag tracking.
+  void endStroke() {
+    _strokeRow = null;
+    _strokeColumn = null;
+  }
+
+  /// Applies the active tool during a continuous drag at [row], [column].
+  ///
+  /// Skips cells already handled in this stroke before delegating to
+  /// [_applyToolAt], which applies its own pixel-level duplicate guards.
+  void handlePixelDrag(int row, int column) {
+    if (_strokeRow == row && _strokeColumn == column) return;
+    _strokeRow = row;
+    _strokeColumn = column;
+    _applyToolAt(row, column);
+  }
+
+  /// Routes draw or erase for the active tool at the given coordinates.
+  void _applyToolAt(int row, int column) {
     switch (_state.selectedTool) {
       case DrawingTool.draw:
         drawPixel(row, column);

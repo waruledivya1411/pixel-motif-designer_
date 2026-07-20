@@ -31,20 +31,115 @@ class PixelGrid extends StatelessWidget {
       shouldRebuild: (previous, next) =>
           previous.rows != next.rows || previous.columns != next.columns,
       builder: (context, dimensions, _) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(
-            dimensions.rows,
-            (row) => _PixelGridRow(
-              row: row,
-              columnCount: dimensions.columns,
-              cellSize: cellSize,
+        return _PixelGridGestureLayer(
+          rows: dimensions.rows,
+          columns: dimensions.columns,
+          cellSize: cellSize,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              dimensions.rows,
+              (row) => _PixelGridRow(
+                row: row,
+                columnCount: dimensions.columns,
+                cellSize: cellSize,
+              ),
             ),
           ),
         );
       },
     );
   }
+}
+
+/// Captures pointer events for tap and drag drawing across the entire grid.
+///
+/// A single grid-level [Listener] is used instead of per-cell gesture
+/// detectors because:
+/// - Pointer events fire immediately on down/move with no pan slop delay.
+/// - One listener tracks continuous drags even when the finger moves quickly
+///   between cells without lifting.
+/// - Cells remain pure display widgets subscribed via [context.select].
+class _PixelGridGestureLayer extends StatefulWidget {
+  const _PixelGridGestureLayer({
+    required this.rows,
+    required this.columns,
+    required this.cellSize,
+    required this.child,
+  });
+
+  final int rows;
+  final int columns;
+  final double cellSize;
+  final Widget child;
+
+  @override
+  State<_PixelGridGestureLayer> createState() => _PixelGridGestureLayerState();
+}
+
+class _PixelGridGestureLayerState extends State<_PixelGridGestureLayer> {
+  /// Whether a pointer is currently pressed against the grid.
+  bool _pointerActive = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerUp: _onPointerUp,
+      onPointerCancel: _onPointerUp,
+      child: widget.child,
+    );
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    _pointerActive = true;
+    final provider = context.read<CanvasProvider>();
+    provider.beginStroke();
+    _forwardPointer(event.localPosition, provider);
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (!_pointerActive) return;
+    _forwardPointer(event.localPosition, context.read<CanvasProvider>());
+  }
+
+  void _onPointerUp(PointerEvent event) {
+    if (!_pointerActive) return;
+    _pointerActive = false;
+    context.read<CanvasProvider>().endStroke();
+  }
+
+  /// Converts a local pointer position to grid coordinates and forwards them.
+  void _forwardPointer(Offset localPosition, CanvasProvider provider) {
+    final coordinates = _cellCoordinatesFromOffset(
+      localPosition,
+      rows: widget.rows,
+      columns: widget.columns,
+      cellSize: widget.cellSize,
+    );
+    if (coordinates == null) return;
+
+    provider.handlePixelDrag(coordinates.$1, coordinates.$2);
+  }
+}
+
+/// Maps a local [offset] within the grid to zero-based (row, column) indices.
+(int, int)? _cellCoordinatesFromOffset(
+  Offset offset, {
+  required int rows,
+  required int columns,
+  required double cellSize,
+}) {
+  final row = offset.dy ~/ cellSize;
+  final column = offset.dx ~/ cellSize;
+
+  if (row < 0 || row >= rows || column < 0 || column >= columns) {
+    return null;
+  }
+
+  return (row, column);
 }
 
 /// One horizontal row of [_PixelCellAt] widgets.
@@ -82,9 +177,8 @@ class _PixelGridRow extends StatelessWidget {
 /// Provider-aware wrapper that rebuilds only when its cell color changes.
 ///
 /// [RepaintBoundary] isolates each cell's paint pass so neighbouring cells
-/// are not repainted during rapid drag drawing in a later phase.
-/// [GestureDetector] captures taps and delegates to [CanvasProvider.handlePixelTap]
-/// without subscribing to the full provider — preserving fine-grained rebuilds.
+/// are not repainted during rapid drag drawing. Gesture handling lives on
+/// [_PixelGridGestureLayer] so this widget never subscribes beyond its color.
 class _PixelCellAt extends StatelessWidget {
   const _PixelCellAt({
     required this.row,
@@ -104,13 +198,9 @@ class _PixelCellAt extends StatelessWidget {
     );
 
     return RepaintBoundary(
-      child: GestureDetector(
-        // Forwards tap coordinates to the provider — no pixel logic in the widget.
-        onTap: () => context.read<CanvasProvider>().handlePixelTap(row, column),
-        child: PixelCell(
-          color: color,
-          size: cellSize,
-        ),
+      child: PixelCell(
+        color: color,
+        size: cellSize,
       ),
     );
   }
