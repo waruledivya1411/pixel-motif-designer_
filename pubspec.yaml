@@ -1,0 +1,41 @@
+name: pixel_motif_designer
+description: A production-quality pixel motif design application.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management — lightweight, interview-friendly, and sufficient for this app.
+  provider: ^6.1.5
+
+  # SVG rendering for motif import/export workflows.
+  flutter_svg: ^2.2.0
+
+  # Local filesystem paths for saving motif files and exports.
+  path_provider: ^2.1.5
+
+  # Saves exported images to the device gallery (actively maintained alternative).
+  gal: ^2.3.2
+
+  # Runtime permission requests for gallery and storage access.
+  permission_handler: ^12.0.1
+
+  # Captures widget snapshots for PNG export.
+  screenshot: ^3.0.0
+
+  # Parses and generates SVG/XML motif data.
+  xml: ^6.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
